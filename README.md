@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="w.png" alt="Wateera Logo" width="150"/>
+  <img src="[w.png](https://res.cloudinary.com/dmrcn6gly/image/upload/v1760896755/w_nwxhdw.png)" alt="Wateera Logo" width="150"/>
 </p>
 
 <h1 align="center">🌿 Wateera — Your Daily Rhythm for Productivity</h1>
@@ -110,7 +110,7 @@ not just to do more, but to live better and focus smarter.
 ---
 
 <p align="center">
-  <img src="w.png" alt="Wateera Logo" width="200"/>
+  <img src="[w.png](https://res.cloudinary.com/dmrcn6gly/image/upload/v1760896755/w_nwxhdw.png)" alt="Wateera Logo" width="200"/>
 </p>
 
 <p align="center">
