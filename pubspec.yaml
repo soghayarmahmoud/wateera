@@ -16,9 +16,11 @@ dependencies:
   hive_flutter: ^1.1.0
   http: ^1.2.1
   percent_indicator: ^4.2.3
+  permission_handler: ^11.3.1
   provider: ^6.0.5
   record: ^6.1.2
   shared_preferences: ^2.2.2
+  speech_to_text: ^6.6.0
   table_calendar: ^3.0.9
   timezone: ^0.9.3
   uuid: ^4.2.1
@@ -34,3 +36,4 @@ flutter:
   uses-material-design: true
   assets:
     - assets/images/
+    - .env
