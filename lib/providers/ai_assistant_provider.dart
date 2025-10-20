@@ -1,7 +1,6 @@
 import 'dart:convert';
 
 import 'package:flutter/material.dart';
-import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:http/http.dart' as http;
 import 'package:wateera/models/ai_message_model.dart';
 
@@ -18,10 +17,8 @@ class AiAssistantProvider extends ChangeNotifier {
     notifyListeners();
 
     try {
-      final apiKey = dotenv.env['GEMINI_API_KEY'];
-      if (apiKey == null) {
-        throw Exception('GEMINI_API_KEY not found in .env file');
-      }
+      final apiKey = "AIzaSyAxeEDPI_o9M24XA5nblfqXtSfix0C01nQ";
+     
 
       final response = await http.post(
         Uri.parse('https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent?key=$apiKey'),

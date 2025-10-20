@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:wateera/models/goal_model.dart';
 import 'package:wateera/models/task_model.dart';
 import 'package:wateera/providers/ai_assistant_provider.dart';
+import 'package:wateera/providers/goal_provider.dart';
 import 'package:wateera/splash_screen.dart';
 import 'providers/task_provider.dart';
 import 'providers/note_provider.dart';
@@ -21,10 +23,13 @@ void main() async {
   await Hive.initFlutter();
   Hive.registerAdapter(TaskAdapter());
   Hive.registerAdapter(NoteAdapter());
+  Hive.registerAdapter(GoalAdapter());
   await Hive.deleteBoxFromDisk('tasks');
   await Hive.openBox<Task>('tasks');
   await Hive.deleteBoxFromDisk('notes');
   await Hive.openBox<Note>('notes');
+  await Hive.deleteBoxFromDisk('goals');
+  await Hive.openBox<Goal>('goals');
 
   runApp(const WateeraApp());
 }
@@ -41,6 +46,7 @@ class WateeraApp extends StatelessWidget {
         ChangeNotifierProvider(create: (_) => NoteProvider()),
         ChangeNotifierProvider(create: (_) => PomodoroProvider()),
         ChangeNotifierProvider(create: (_) => AiAssistantProvider()),
+        ChangeNotifierProvider(create: (_) => GoalProvider()),
       ],
       child: Consumer<ThemeProvider>(
         builder: (context, themeProvider, child) {

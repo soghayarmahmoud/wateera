@@ -2,7 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:table_calendar/table_calendar.dart';
 import 'package:wateera/components/wateera_app_bar.dart';
+import 'package:wateera/models/goal_model.dart';
+import 'package:wateera/models/note_model.dart';
 import 'package:wateera/models/task_model.dart';
+import 'package:wateera/providers/goal_provider.dart';
+import 'package:wateera/providers/note_provider.dart';
 import 'package:wateera/providers/task_provider.dart';
 import 'day_screen.dart';
 
@@ -14,13 +18,18 @@ class CalendarScreen extends StatefulWidget {
 }
 
 class _CalendarScreenState extends State<CalendarScreen> {
-  final DateTime _selectedDay = DateTime.now();
-  final DateTime _focusedDay = DateTime.now();
+  DateTime _selectedDay = DateTime.now();
+  DateTime _focusedDay = DateTime.now();
 
   @override
   Widget build(BuildContext context) {
     final taskProvider = Provider.of<TaskProvider>(context);
+    final goalProvider = Provider.of<GoalProvider>(context);
+    final noteProvider = Provider.of<NoteProvider>(context);
+
     final tasksForSelectedDay = taskProvider.getTasksForDate(_selectedDay);
+    final goalsForSelectedDay = goalProvider.goals.where((goal) => isSameDay(goal.endTime, _selectedDay)).toList();
+    final notesForSelectedDay = noteProvider.getNotesForDate(_selectedDay);
 
     return Scaffold(
       appBar: const WateeraAppBar(title: Text('Calendar')),
@@ -36,12 +45,10 @@ class _CalendarScreenState extends State<CalendarScreen> {
                 focusedDay: _focusedDay,
                 selectedDayPredicate: (day) => isSameDay(_selectedDay, day),
                 onDaySelected: (selectedDay, focusedDay) {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => DayScreen(day: selectedDay),
-                    ),
-                  );
+                  setState(() {
+                    _selectedDay = selectedDay;
+                    _focusedDay = focusedDay;
+                  });
                 },
                 calendarStyle: CalendarStyle(
                   selectedDecoration: const BoxDecoration(
@@ -64,7 +71,11 @@ class _CalendarScreenState extends State<CalendarScreen> {
                   titleCentered: true,
                 ),
                 eventLoader: (day) {
-                  return taskProvider.getTasksForDate(day);
+                  return [
+                    ...taskProvider.getTasksForDate(day),
+                    ...goalProvider.goals.where((goal) => isSameDay(goal.endTime, day)),
+                    ...noteProvider.getNotesForDate(day),
+                  ];
                 },
               ),
             ),
@@ -75,30 +86,35 @@ class _CalendarScreenState extends State<CalendarScreen> {
             ),
             const SizedBox(height: 16),
             if (tasksForSelectedDay.isEmpty)
-              Center(
-                child: Padding(
-                  padding: const EdgeInsets.all(32),
-                  child: Column(
-                    children: [
-                      Icon(
-                        Icons.event_available,
-                        size: 64,
-                        color: Colors.grey.shade400,
-                      ),
-                      const SizedBox(height: 16),
-                      Text(
-                        'No tasks for this day',
-                        style: TextStyle(
-                          fontSize: 16,
-                          color: Colors.grey.shade600,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
+              const Center(
+                child: Text('No tasks for this day'),
               )
             else
               ...tasksForSelectedDay.map((task) => _buildTaskCard(task, taskProvider)),
+            const SizedBox(height: 24),
+            Text(
+              'Goals for ${_selectedDay.day}/${_selectedDay.month}/${_selectedDay.year}',
+              style: Theme.of(context).textTheme.displayMedium,
+            ),
+            const SizedBox(height: 16),
+            if (goalsForSelectedDay.isEmpty)
+              const Center(
+                child: Text('No goals for this day'),
+              )
+            else
+              ...goalsForSelectedDay.map((goal) => _buildGoalCard(goal, goalProvider)),
+            const SizedBox(height: 24),
+            Text(
+              'Notes for ${_selectedDay.day}/${_selectedDay.month}/${_selectedDay.year}',
+              style: Theme.of(context).textTheme.displayMedium,
+            ),
+            const SizedBox(height: 16),
+            if (notesForSelectedDay.isEmpty)
+              const Center(
+                child: Text('No notes for this day'),
+              )
+            else
+              ...notesForSelectedDay.map((note) => _buildNoteCard(note, noteProvider)),
           ],
         ),
       ),
@@ -127,6 +143,46 @@ class _CalendarScreenState extends State<CalendarScreen> {
         trailing: IconButton(
           icon: const Icon(Icons.delete, color: Colors.red),
           onPressed: () => taskProvider.deleteTask(task.id),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildGoalCard(Goal goal, GoalProvider goalProvider) {
+    return Card(
+      margin: const EdgeInsets.only(bottom: 12),
+      child: ListTile(
+        leading: Checkbox(
+          value: goal.isCompleted,
+          onChanged: (_) => goalProvider.toggleGoalCompletion(goal.id),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(4),
+          ),
+        ),
+        title: Text(
+          goal.title,
+          style: TextStyle(
+            decoration: goal.isCompleted ? TextDecoration.lineThrough : null,
+            fontWeight: FontWeight.w500,
+          ),
+        ),
+        trailing: IconButton(
+          icon: const Icon(Icons.delete, color: Colors.red),
+          onPressed: () => goalProvider.deleteGoal(goal.id),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildNoteCard(Note note, NoteProvider noteProvider) {
+    return Card(
+      margin: const EdgeInsets.only(bottom: 12),
+      child: ListTile(
+        title: Text(note.title),
+        subtitle: Text(note.content),
+        trailing: IconButton(
+          icon: const Icon(Icons.delete, color: Colors.red),
+          onPressed: () => noteProvider.deleteNote(note.id),
         ),
       ),
     );

@@ -11,6 +11,14 @@ class NoteProvider extends ChangeNotifier {
 
   List<Note> get notes => _noteBox.values.toList();
 
+  List<Note> getNotesForDate(DateTime date) {
+    return _noteBox.values.where((note) {
+      return note.createdAt.year == date.year &&
+          note.createdAt.month == date.month &&
+          note.createdAt.day == date.day;
+    }).toList();
+  }
+
   void addNote(Note note) {
     _noteBox.put(note.id, note);
     notifyListeners();

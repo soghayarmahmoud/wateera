@@ -14,31 +14,42 @@ class _MessageInputFieldState extends State<MessageInputField> {
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.all(8.0),
-      child: Row(
-        children: [
-          Expanded(
-            child: TextField(
-              controller: _textController,
-              decoration: const InputDecoration(
-                hintText: 'Type a message...',
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.all(Radius.circular(20)),
+    return Container(
+      decoration: BoxDecoration(
+        color: Theme.of(context).cardColor,
+        boxShadow: [
+          BoxShadow(
+            color: Colors.grey.withOpacity(0.1),
+            spreadRadius: 1,
+            blurRadius: 5,
+            offset: const Offset(0, -5),
+          ),
+        ],
+      ),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+        child: Row(
+          children: [
+            Expanded(
+              child: TextField(
+                controller: _textController,
+                decoration: const InputDecoration(
+                  hintText: 'Type a message...',
+                  border: InputBorder.none,
                 ),
               ),
             ),
-          ),
-          IconButton(
-            icon: const Icon(Icons.send),
-            onPressed: () {
-              if (_textController.text.isNotEmpty) {
-                widget.onSend(_textController.text);
-                _textController.clear();
-              }
-            },
-          ),
-        ],
+            IconButton(
+              icon: Icon(Icons.send, color: Theme.of(context).primaryColor),
+              onPressed: () {
+                if (_textController.text.isNotEmpty) {
+                  widget.onSend(_textController.text);
+                  _textController.clear();
+                }
+              },
+            ),
+          ],
+        ),
       ),
     );
   }
