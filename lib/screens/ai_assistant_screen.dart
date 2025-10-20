@@ -76,7 +76,7 @@ class _AiAssistantScreenState extends State<AiAssistantScreen> {
                 MessageInputField(
                   onSend: (message) {
                     Provider.of<AiAssistantProvider>(context, listen: false)
-                        .sendMessage(message);
+                        .sendMessage(context, message);
                   },
                 ),
               ],

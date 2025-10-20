@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:provider/provider.dart';
 import 'package:wateera/models/goal_model.dart';
 import 'package:wateera/models/task_model.dart';
@@ -18,6 +19,7 @@ import 'package:timezone/data/latest.dart' as tz;
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  await dotenv.load(fileName: ".env");
   tz.initializeTimeZones();
   await NotificationService().init();
   await Hive.initFlutter();
