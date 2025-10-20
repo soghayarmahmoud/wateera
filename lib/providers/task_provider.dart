@@ -1,60 +1,76 @@
+
 import 'package:flutter/material.dart';
-import 'package:hive/hive.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:wateera/providers/auth_provider.dart';
 import 'package:wateera/services/notification_service.dart';
 import '../models/task_model.dart';
 
 class TaskProvider extends ChangeNotifier {
-  late Box<Task> _taskBox;
+  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
   final NotificationService _notificationService = NotificationService();
+  late AuthProvider _authProvider;
 
-  TaskProvider() {
-    _taskBox = Hive.box<Task>('tasks');
-    scheduleTaskReminders();
+  List<Task> _tasks = [];
+
+  List<Task> get tasks => _tasks;
+
+  TaskProvider(AuthProvider authProvider) {
+    _authProvider = authProvider;
+    _fetchTasks();
   }
 
-  List<Task> get tasks => _taskBox.values.toList();
+  CollectionReference get _tasksCollection => _firestore
+      .collection('users')
+      .doc(_authProvider.user!.uid)
+      .collection('tasks');
+
+  Future<void> _fetchTasks() async {
+    if (_authProvider.user == null) return;
+
+    _tasksCollection.snapshots().listen((snapshot) {
+      _tasks = snapshot.docs.map((doc) => Task.fromFirestore(doc)).toList();
+      scheduleTaskReminders();
+      notifyListeners();
+    });
+  }
 
   List<Task> getTasksForDate(DateTime date) {
-    return _taskBox.values.where((task) {
+    return _tasks.where((task) {
       return task.date.year == date.year &&
           task.date.month == date.month &&
           task.date.day == date.day;
     }).toList();
   }
 
-  void addTask(Task task) {
-    _taskBox.put(task.id, task);
-    scheduleTaskReminders();
-    notifyListeners();
+  Future<void> addTask(Task task) async {
+    if (_authProvider.user == null) return;
+    await _tasksCollection.doc(task.id).set(task.toJson());
   }
 
-  void updateTask(Task updatedTask) {
-    _taskBox.put(updatedTask.id, updatedTask);
-    scheduleTaskReminders();
-    notifyListeners();
+  Future<void> updateTask(Task updatedTask) async {
+    if (_authProvider.user == null) return;
+    await _tasksCollection.doc(updatedTask.id).update(updatedTask.toJson());
   }
 
-  void deleteTask(String taskId) {
-    _taskBox.delete(taskId);
-    notifyListeners();
+  Future<void> deleteTask(String taskId) async {
+    if (_authProvider.user == null) return;
+    await _tasksCollection.doc(taskId).delete();
   }
 
-  void toggleTaskCompletion(String taskId) {
-    final task = _taskBox.get(taskId);
-    if (task != null) {
-      task.isCompleted = !task.isCompleted;
-      _taskBox.put(taskId, task);
-      notifyListeners();
-    }
+  Future<void> toggleTaskCompletion(String taskId) async {
+    if (_authProvider.user == null) return;
+    final task = _tasks.firstWhere((task) => task.id == taskId);
+    task.isCompleted = !task.isCompleted;
+    await _tasksCollection.doc(taskId).update({'isCompleted': task.isCompleted});
   }
 
   int get completedTasksCount {
-    return _taskBox.values.where((task) => task.isCompleted).length;
+    return _tasks.where((task) => task.isCompleted).length;
   }
 
   void scheduleTaskReminders() {
     final now = DateTime.now();
-    for (var task in _taskBox.values) {
+    for (var task in _tasks) {
       if (!task.isCompleted) {
         final timeParts = task.startTime.split(':');
         final hour = int.parse(timeParts[0]);

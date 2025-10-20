@@ -1,28 +1,12 @@
-import 'package:hive/hive.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 
-part 'task_model.g.dart';
-
-@HiveType(typeId: 0)
 class Task {
-  @HiveField(0)
   final String id;
-
-  @HiveField(1)
   final String title;
-
-  @HiveField(2)
   final DateTime date;
-
-  @HiveField(3)
   final String startTime;
-
-  @HiveField(4)
   final String endTime;
-
-  @HiveField(5)
   bool isCompleted;
-
-  @HiveField(6)
   final int color;
 
   Task({
@@ -40,7 +24,7 @@ class Task {
     return {
       'id': id,
       'title': title,
-      'date': date.toIso8601String(),
+      'date': Timestamp.fromDate(date),
       'startTime': startTime,
       'endTime': endTime,
       'isCompleted': isCompleted,
@@ -48,16 +32,17 @@ class Task {
     };
   }
 
-  // Create from JSON
-  factory Task.fromJson(Map<String, dynamic> json) {
+  // Create from Firestore DocumentSnapshot
+  factory Task.fromFirestore(DocumentSnapshot doc) {
+    Map<String, dynamic> data = doc.data() as Map<String, dynamic>;
     return Task(
-      id: json['id'],
-      title: json['title'],
-      date: DateTime.parse(json['date']),
-      startTime: json['startTime'],
-      endTime: json['endTime'],
-      isCompleted: json['isCompleted'] ?? false,
-      color: json['color'] as int? ?? 0xFF2196F3,
+      id: doc.id,
+      title: data['title'],
+      date: (data['date'] as Timestamp).toDate(),
+      startTime: data['startTime'],
+      endTime: data['endTime'],
+      isCompleted: data['isCompleted'] ?? false,
+      color: data['color'] as int? ?? 0xFF2196F3,
     );
   }
 

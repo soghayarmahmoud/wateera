@@ -1,23 +1,10 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 
-import 'package:hive/hive.dart';
-
-part 'note_model.g.dart';
-
-@HiveType(typeId: 1)
 class Note {
-  @HiveField(0)
   final String id;
-
-  @HiveField(1)
   final String title;
-
-  @HiveField(2)
   final String content;
-
-  @HiveField(3)
   final DateTime createdAt;
-
-  @HiveField(4, defaultValue: 0xFFFFFFFF)
   final int color;
 
   Note({
@@ -27,6 +14,29 @@ class Note {
     required this.createdAt,
     this.color = 0xFFFFFFFF,
   });
+
+  // Convert to JSON for Firestore
+  Map<String, dynamic> toJson() {
+    return {
+      'id': id,
+      'title': title,
+      'content': content,
+      'createdAt': Timestamp.fromDate(createdAt),
+      'color': color,
+    };
+  }
+
+  // Create from Firestore DocumentSnapshot
+  factory Note.fromFirestore(DocumentSnapshot doc) {
+    Map<String, dynamic> data = doc.data() as Map<String, dynamic>;
+    return Note(
+      id: doc.id,
+      title: data['title'],
+      content: data['content'],
+      createdAt: (data['createdAt'] as Timestamp).toDate(),
+      color: data['color'] as int? ?? 0xFFFFFFFF,
+    );
+  }
 
   Note copyWith({
     String? id,

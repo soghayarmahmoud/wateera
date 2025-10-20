@@ -1,6 +1,7 @@
+
 import 'dart:async';
 import 'package:flutter/material.dart';
-import 'package:wateera/screens/main_screen.dart';
+import 'package:wateera/screens/auth_wrapper.dart';
 import 'package:wateera/theme/app_theme.dart';
 
 class AnimatedSplashScreen extends StatefulWidget {
@@ -60,11 +61,11 @@ class _AnimatedSplashScreenState extends State<AnimatedSplashScreen>
 
     _controller.forward();
 
-   Timer(const Duration(milliseconds: 4200), () {
-    Navigator.of(context).pushReplacement(
-      MaterialPageRoute(builder: (context) => const MainScreen()),
-    );
-  });
+    Timer(const Duration(milliseconds: 4200), () {
+      Navigator.of(context).pushReplacement(
+        MaterialPageRoute(builder: (context) => const AuthWrapper()),
+      );
+    });
   }
 
   @override
@@ -89,14 +90,27 @@ class _AnimatedSplashScreenState extends State<AnimatedSplashScreen>
                 child: Stack(
                   alignment: Alignment.center,
                   children: [
-                    Container(width: 200, height: 200, decoration: BoxDecoration(color: theme.primaryColor, shape: BoxShape.circle)),
-                    Container(width: 150, height: 150, decoration: BoxDecoration(color: theme.colorScheme.secondary, shape: BoxShape.circle)),
-                    Container(width: 100, height: 100, decoration: BoxDecoration(color: theme.colorScheme.tertiary, shape: BoxShape.circle)),
+                    Container(
+                        width: 200,
+                        height: 200,
+                        decoration: BoxDecoration(
+                            color: theme.primaryColor, shape: BoxShape.circle)),
+                    Container(
+                        width: 150,
+                        height: 150,
+                        decoration: BoxDecoration(
+                            color: theme.colorScheme.secondary,
+                            shape: BoxShape.circle)),
+                    Container(
+                        width: 100,
+                        height: 100,
+                        decoration: BoxDecoration(
+                            color: theme.colorScheme.tertiary,
+                            shape: BoxShape.circle)),
                   ],
                 ),
               ),
             ),
-            
             Column(
               mainAxisSize: MainAxisSize.min,
               children: [
@@ -112,7 +126,6 @@ class _AnimatedSplashScreenState extends State<AnimatedSplashScreen>
                   ),
                 ),
                 const SizedBox(height: 20),
-                
                 AnimatedBuilder(
                   animation: _barWidthAnimation,
                   builder: (context, child) {

@@ -1,19 +1,9 @@
-import 'package:hive/hive.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 
-part 'goal_model.g.dart';
-
-@HiveType(typeId: 2)
 class Goal {
-  @HiveField(0)
   final String id;
-
-  @HiveField(1)
   final String title;
-
-  @HiveField(2)
   final DateTime endTime;
-
-  @HiveField(3)
   bool isCompleted;
 
   Goal({
@@ -22,4 +12,25 @@ class Goal {
     required this.endTime,
     this.isCompleted = false,
   });
+
+  // Convert to JSON for Firestore
+  Map<String, dynamic> toJson() {
+    return {
+      'id': id,
+      'title': title,
+      'endTime': Timestamp.fromDate(endTime),
+      'isCompleted': isCompleted,
+    };
+  }
+
+  // Create from Firestore DocumentSnapshot
+  factory Goal.fromFirestore(DocumentSnapshot doc) {
+    Map<String, dynamic> data = doc.data() as Map<String, dynamic>;
+    return Goal(
+      id: doc.id,
+      title: data['title'],
+      endTime: (data['endTime'] as Timestamp).toDate(),
+      isCompleted: data['isCompleted'] ?? false,
+    );
+  }
 }

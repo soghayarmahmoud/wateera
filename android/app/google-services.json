@@ -1,0 +1,46 @@
+{
+  "project_info": {
+    "project_number": "948031931219",
+    "project_id": "socialmediaapp-479ad",
+    "storage_bucket": "socialmediaapp-479ad.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:948031931219:android:5c3169b3be13c0d54297a6",
+        "android_client_info": {
+          "package_name": "com.example.wateera"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "948031931219-uhsqqddmoi13m686jua69tulubabn76b.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyC1gqz83VMMvsSHQ-N97plVj9cegh8Vyv8"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "948031931219-uhsqqddmoi13m686jua69tulubabn76b.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "948031931219-ll9rnn2g11e7s7epnflnmmevc0d8rnvi.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.example.social"
+              }
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

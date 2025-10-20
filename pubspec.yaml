@@ -7,10 +7,14 @@ environment:
   sdk: ^3.9.0
 
 dependencies:
+  cloud_firestore: ^4.17.2
+  firebase_auth: ^4.16.0
+  firebase_core: ^2.31.0
   flutter:
     sdk: flutter
   flutter_dotenv: ^5.1.0
   flutter_local_notifications: ^17.0.0
+  google_sign_in: ^6.2.1
   google_fonts: ^6.1.0
   hive: ^2.2.3
   hive_flutter: ^1.1.0

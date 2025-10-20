@@ -1,55 +1,70 @@
 import 'package:flutter/material.dart';
-import 'package:hive/hive.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:wateera/providers/auth_provider.dart';
 import 'package:wateera/models/goal_model.dart';
 import 'package:wateera/services/notification_service.dart';
 import 'package:uuid/uuid.dart';
 
 class GoalProvider extends ChangeNotifier {
-  late Box<Goal> _goalBox;
+  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
   final NotificationService _notificationService = NotificationService();
   final Uuid _uuid = const Uuid();
+  late AuthProvider _authProvider;
 
-  GoalProvider() {
-    _goalBox = Hive.box<Goal>('goals');
-    scheduleGoalNotifications();
+  List<Goal> _goals = [];
+
+  List<Goal> get goals => _goals;
+
+  GoalProvider(AuthProvider authProvider) {
+    _authProvider = authProvider;
+    _fetchGoals();
   }
 
-  List<Goal> get goals => _goalBox.values.toList();
+  CollectionReference get _goalsCollection => _firestore
+      .collection('users')
+      .doc(_authProvider.user!.uid)
+      .collection('goals');
 
-  void addGoal(String title, DateTime endTime) {
+  Future<void> _fetchGoals() async {
+    if (_authProvider.user == null) return;
+
+    _goalsCollection.snapshots().listen((snapshot) {
+      _goals = snapshot.docs.map((doc) => Goal.fromFirestore(doc)).toList();
+      scheduleGoalNotifications();
+      notifyListeners();
+    });
+  }
+
+  Future<void> addGoal(String title, DateTime endTime) async {
+    if (_authProvider.user == null) return;
     final newGoal = Goal(
       id: _uuid.v4(),
       title: title,
       endTime: endTime,
     );
-    _goalBox.put(newGoal.id, newGoal);
-    scheduleGoalNotifications();
-    notifyListeners();
+    await _goalsCollection.doc(newGoal.id).set(newGoal.toJson());
   }
 
-  void updateGoal(Goal updatedGoal) {
-    _goalBox.put(updatedGoal.id, updatedGoal);
-    scheduleGoalNotifications();
-    notifyListeners();
+  Future<void> updateGoal(Goal updatedGoal) async {
+    if (_authProvider.user == null) return;
+    await _goalsCollection.doc(updatedGoal.id).update(updatedGoal.toJson());
   }
 
-  void deleteGoal(String goalId) {
-    _goalBox.delete(goalId);
-    notifyListeners();
+  Future<void> deleteGoal(String goalId) async {
+    if (_authProvider.user == null) return;
+    await _goalsCollection.doc(goalId).delete();
   }
 
-  void toggleGoalCompletion(String goalId) {
-    final goal = _goalBox.get(goalId);
-    if (goal != null) {
-      goal.isCompleted = !goal.isCompleted;
-      _goalBox.put(goalId, goal);
-      notifyListeners();
-    }
+  Future<void> toggleGoalCompletion(String goalId) async {
+    if (_authProvider.user == null) return;
+    final goal = _goals.firstWhere((goal) => goal.id == goalId);
+    goal.isCompleted = !goal.isCompleted;
+    await _goalsCollection.doc(goalId).update({'isCompleted': goal.isCompleted});
   }
 
   void scheduleGoalNotifications() {
     final now = DateTime.now();
-    for (var goal in _goalBox.values) {
+    for (var goal in _goals) {
       if (!goal.isCompleted && goal.endTime.isAfter(now)) {
         _notificationService.scheduleNotification(
           goal.id.hashCode,

@@ -1,36 +1,56 @@
+
 import 'package:flutter/material.dart';
-import 'package:hive/hive.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:wateera/providers/auth_provider.dart';
 import '../models/note_model.dart';
 
 class NoteProvider extends ChangeNotifier {
-  late Box<Note> _noteBox;
+  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
+  late AuthProvider _authProvider;
 
-  NoteProvider() {
-    _noteBox = Hive.box<Note>('notes');
+  List<Note> _notes = [];
+
+  List<Note> get notes => _notes;
+
+  NoteProvider(AuthProvider authProvider) {
+    _authProvider = authProvider;
+    _fetchNotes();
   }
 
-  List<Note> get notes => _noteBox.values.toList();
+  CollectionReference get _notesCollection => _firestore
+      .collection('users')
+      .doc(_authProvider.user!.uid)
+      .collection('notes');
+
+  Future<void> _fetchNotes() async {
+    if (_authProvider.user == null) return;
+
+    _notesCollection.snapshots().listen((snapshot) {
+      _notes = snapshot.docs.map((doc) => Note.fromFirestore(doc)).toList();
+      notifyListeners();
+    });
+  }
 
   List<Note> getNotesForDate(DateTime date) {
-    return _noteBox.values.where((note) {
+    return _notes.where((note) {
       return note.createdAt.year == date.year &&
           note.createdAt.month == date.month &&
           note.createdAt.day == date.day;
     }).toList();
   }
 
-  void addNote(Note note) {
-    _noteBox.put(note.id, note);
-    notifyListeners();
+  Future<void> addNote(Note note) async {
+    if (_authProvider.user == null) return;
+    await _notesCollection.doc(note.id).set(note.toJson());
   }
 
-  void updateNote(Note updatedNote) {
-    _noteBox.put(updatedNote.id, updatedNote);
-    notifyListeners();
+  Future<void> updateNote(Note updatedNote) async {
+    if (_authProvider.user == null) return;
+    await _notesCollection.doc(updatedNote.id).update(updatedNote.toJson());
   }
 
-  void deleteNote(String noteId) {
-    _noteBox.delete(noteId);
-    notifyListeners();
+  Future<void> deleteNote(String noteId) async {
+    if (_authProvider.user == null) return;
+    await _notesCollection.doc(noteId).delete();
   }
 }

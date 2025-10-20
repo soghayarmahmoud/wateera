@@ -54,10 +54,14 @@ class AiAssistantProvider extends ChangeNotifier {
 
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
-        final generatedText = data['candidates'][0]['content']['parts'][0]['text'];
-        _messages.add(AiMessage(text: generatedText, isMe: false));
+        if (data['candidates'] != null && data['candidates'].isNotEmpty) {
+          final generatedText = data['candidates'][0]['content']['parts'][0]['text'];
+          _messages.add(AiMessage(text: generatedText, isMe: false));
+        } else {
+          _messages.add(AiMessage(text: 'Error: No response from AI', isMe: false));
+        }
       } else {
-        _messages.add(AiMessage(text: 'Error: ${response.reasonPhrase}', isMe: false));
+        _messages.add(AiMessage(text: 'Error: ${response.reasonPhrase}\n${response.body}', isMe: false));
       }
     } catch (e) {
       _messages.add(AiMessage(text: 'Error: $e', isMe: false));
@@ -100,10 +104,12 @@ class AiAssistantProvider extends ChangeNotifier {
     } else if (text.startsWith('add note:')) {
       try {
         final content = text.substring('add note:'.length).trim();
+        final title = content.substring(0, content.length > 20 ? 20 : content.length);
         final note = Note(
           id: _uuid.v4(),
+          title: title,
           content: content,
-          createdAt: DateTime.now(), title: '',
+          createdAt: DateTime.now(),
         );
         Provider.of<NoteProvider>(context, listen: false).addNote(note);
         _messages.add(AiMessage(text: 'Note added successfully.', isMe: false));
