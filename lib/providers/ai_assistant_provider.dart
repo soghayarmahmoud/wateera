@@ -1,9 +1,7 @@
-import 'dart:convert';
-
 import 'package:flutter/material.dart';
+
 import 'package:flutter_dotenv/flutter_dotenv.dart';
-import 'package:http/http.dart' as http;
-import 'package:provider/provider.dart';
+import 'package:google_generative_ai/google_generative_ai.dart';
 import 'package:wateera/models/ai_message_model.dart';
 import 'package:wateera/models/note_model.dart';
 import 'package:wateera/models/task_model.dart';
@@ -16,15 +14,38 @@ class AiAssistantProvider extends ChangeNotifier {
   final List<AiMessage> _messages = [];
   bool _isLoading = false;
   final Uuid _uuid = const Uuid();
+  late final GenerativeModel _model;
+
+  // الـ Providers اللي هنحتاجها
+  final TaskProvider _taskProvider;
+  final NoteProvider _noteProvider;
+  final GoalProvider _goalProvider;
+
+  // Constructor لاستقبال الـ Providers
+  AiAssistantProvider(
+    this._taskProvider,
+    this._noteProvider,
+    this._goalProvider,
+  ) {
+    final apiKey = dotenv.env['GEMINI_API_KEY'];
+    if (apiKey == null) {
+      throw Exception('GEMINI_API_KEY not found in .env file');
+    }
+    _model = GenerativeModel(
+      model: 'gemini-2.5-flash',
+      apiKey: apiKey,
+    );
+  }
 
   List<AiMessage> get messages => _messages;
   bool get isLoading => _isLoading;
 
-  Future<void> sendMessage(BuildContext context, String text) async {
+  Future<void> sendMessage(String text) async {
     _messages.add(AiMessage(text: text, isMe: true));
     notifyListeners();
 
-    if (await _handleCommand(context, text)) {
+    // تم حذف الـ context من هنا
+    if (await _handleCommand(text)) {
       return;
     }
 
@@ -32,46 +53,40 @@ class AiAssistantProvider extends ChangeNotifier {
     notifyListeners();
 
     try {
-      final apiKey = dotenv.env['GEMINI_API_KEY'];
-      if (apiKey == null) {
-        throw Exception('GEMINI_API_KEY not found in .env file');
-      }
+      // Use the GenerativeModel to generate content
+      final content = [Content.text(text)];
+      final response = await _model.generateContent(content);
 
-      final response = await http.post(
-        Uri.parse(
-          'https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-latest:generateContent?key=$apiKey',
-        ),
-        headers: {'Content-Type': 'application/json'},
-        body: jsonEncode({
-          'contents': [
-            {
-              'parts': [
-                {'text': text},
-              ],
-            },
-          ],
-        }),
-      );
-
-      if (response.statusCode == 200) {
-        final data = jsonDecode(response.body);
-        if (data['candidates'] != null && data['candidates'].isNotEmpty) {
-          final generatedText =
-              data['candidates'][0]['content']['parts'][0]['text'];
-          _messages.add(AiMessage(text: generatedText, isMe: false));
+      if (response.text != null) {
+        _messages.add(AiMessage(text: response.text!, isMe: false));
+      } else if (response.candidates != null &&
+          response.candidates!.isNotEmpty) {
+        final candidate = response.candidates![0];
+        if (candidate.finishReason != null) {
+          _messages.add(
+            AiMessage(
+              text:
+                  'AI response was blocked or empty (Reason: ${candidate.finishReason})',
+              isMe: false,
+            ),
+          );
         } else {
           _messages.add(
-            AiMessage(text: 'Error: No response from AI', isMe: false),
+            AiMessage(
+              text: 'Error: No text content in AI response.',
+              isMe: false,
+            ),
           );
         }
       } else {
         _messages.add(
-          AiMessage(
-            text: 'Error: ${response.reasonPhrase}\n${response.body}',
-            isMe: false,
-          ),
+          AiMessage(text: 'Error: No response from AI', isMe: false),
         );
       }
+    } on GenerativeAIException catch (e) {
+      _messages.add(
+        AiMessage(text: 'Error from AI service: ${e.message}', isMe: false),
+      );
     } catch (e) {
       _messages.add(AiMessage(text: 'Error: $e', isMe: false));
     } finally {
@@ -80,7 +95,8 @@ class AiAssistantProvider extends ChangeNotifier {
     }
   }
 
-  Future<bool> _handleCommand(BuildContext context, String text) async {
+  // تم حذف الـ context من هنا
+  Future<bool> _handleCommand(String text) async {
     if (text.startsWith('add task:')) {
       try {
         final parts = text.substring('add task:'.length).trim().split(',');
@@ -96,7 +112,8 @@ class AiAssistantProvider extends ChangeNotifier {
             startTime: startTime,
             endTime: endTime,
           );
-          Provider.of<TaskProvider>(context, listen: false).addTask(task);
+          //  ===== الجزء اللي تم تعديله (استخدام الـ Provider المحقون) =====
+          _taskProvider.addTask(task);
           _messages.add(
             AiMessage(text: 'Task "$title" added successfully.', isMe: false),
           );
@@ -131,7 +148,8 @@ class AiAssistantProvider extends ChangeNotifier {
           content: content,
           createdAt: DateTime.now(),
         );
-        Provider.of<NoteProvider>(context, listen: false).addNote(note);
+        //  ===== الجزء اللي تم تعديله (استخدام الـ Provider المحقون) =====
+        _noteProvider.addNote(note);
         _messages.add(AiMessage(text: 'Note added successfully.', isMe: false));
         notifyListeners();
         return true;
@@ -146,10 +164,8 @@ class AiAssistantProvider extends ChangeNotifier {
         if (parts.length == 2) {
           final title = parts[0].trim();
           final endTime = DateTime.parse(parts[1].trim());
-          Provider.of<GoalProvider>(
-            context,
-            listen: false,
-          ).addGoal(title, endTime);
+          //  ===== الجزء اللي تم تعديله (استخدام الـ Provider المحقون) =====
+          _goalProvider.addGoal(title, endTime);
           _messages.add(
             AiMessage(text: 'Goal "$title" added successfully.', isMe: false),
           );

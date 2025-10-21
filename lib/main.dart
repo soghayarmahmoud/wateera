@@ -34,12 +34,15 @@ class WateeraApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MultiProvider(
       providers: [
+        // 1. Providers مستقلة (لا تعتمد على غيرها)
         ChangeNotifierProvider(create: (_) => ThemeProvider()),
-        ChangeNotifierProvider(create: (_) => AiAssistantProvider()),
         ChangeNotifierProvider(create: (_) => AuthProvider()),
+        ChangeNotifierProvider(create: (_) => PomodoroProvider()),
+
+        // 2. Providers تعتمد على AuthProvider
         ChangeNotifierProxyProvider<AuthProvider, TaskProvider>(
           create: (context) => TaskProvider(
-            Provider.of<AuthProvider>(context, listen: false),
+            context.read<AuthProvider>(), // استخدم .read أفضل
             [],
           ),
           update: (context, auth, previous) {
@@ -49,7 +52,7 @@ class WateeraApp extends StatelessWidget {
         ),
         ChangeNotifierProxyProvider<AuthProvider, NoteProvider>(
           create: (context) => NoteProvider(
-            Provider.of<AuthProvider>(context, listen: false),
+            context.read<AuthProvider>(),
             [],
           ),
           update: (context, auth, previous) {
@@ -59,7 +62,7 @@ class WateeraApp extends StatelessWidget {
         ),
         ChangeNotifierProxyProvider<AuthProvider, GoalProvider>(
           create: (context) => GoalProvider(
-            Provider.of<AuthProvider>(context, listen: false),
+            context.read<AuthProvider>(),
             [],
           ),
           update: (context, auth, previous) {
@@ -67,7 +70,16 @@ class WateeraApp extends StatelessWidget {
             return previous;
           },
         ),
-        ChangeNotifierProvider(create: (_) => PomodoroProvider()),
+
+        // 3. (أخيراً) Provider يعتمد على Task, Note, Goal
+        //    لازم ييجي *بعدهم*
+        ChangeNotifierProvider(
+          create: (context) => AiAssistantProvider(
+            context.read<TaskProvider>(),
+            context.read<NoteProvider>(),
+            context.read<GoalProvider>(),
+          ),
+        ),
       ],
       child: Consumer<ThemeProvider>(
         builder: (context, themeProvider, child) {

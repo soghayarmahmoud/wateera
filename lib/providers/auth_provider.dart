@@ -8,7 +8,6 @@ class AuthProvider extends ChangeNotifier {
   final GoogleSignIn _googleSignIn = GoogleSignIn();
 
   User? _user;
-
   int _userPoints = 0;
 
   User? get user => _user;
@@ -28,15 +27,23 @@ class AuthProvider extends ChangeNotifier {
 
   Future<void> _fetchUserPoints() async {
     if (_user == null) return;
-    final doc = await FirebaseFirestore.instance.collection('users').doc(_user!.uid).get();
+
+    final doc = await FirebaseFirestore.instance
+        .collection('users')
+        .doc(_user!.uid)
+        .get();
+
     if (doc.exists && doc.data()!.containsKey('points')) {
       _userPoints = doc.data()!['points'] as int;
     } else {
       _userPoints = 0; // Default if no points field
-      await FirebaseFirestore.instance.collection('users').doc(_user!.uid).set({'points': 0}, SetOptions(merge: true));
+      await FirebaseFirestore.instance
+          .collection('users')
+          .doc(_user!.uid)
+          .set({'points': 0}, SetOptions(merge: true));
     }
-      notifyListeners();
-    });
+
+    notifyListeners();
   }
 
   Future<String?> signUpWithEmailAndPassword(
@@ -46,9 +53,15 @@ class AuthProvider extends ChangeNotifier {
         email: email,
         password: password,
       );
+
       // Update the user's profile with their name
       await userCredential.user?.updateDisplayName('$firstName $lastName');
-      await FirebaseFirestore.instance.collection('users').doc(userCredential.user!.uid).set({'points': 0}, SetOptions(merge: true));
+
+      await FirebaseFirestore.instance
+          .collection('users')
+          .doc(userCredential.user!.uid)
+          .set({'points': 0}, SetOptions(merge: true));
+
       _user = _auth.currentUser; // Refresh the user
       return null; // Success
     } on FirebaseAuthException catch (e) {
@@ -56,7 +69,8 @@ class AuthProvider extends ChangeNotifier {
     }
   }
 
-  Future<String?> signInWithEmailAndPassword(String email, String password) async {
+  Future<String?> signInWithEmailAndPassword(
+      String email, String password) async {
     try {
       await _auth.signInWithEmailAndPassword(
         email: email,
@@ -74,15 +88,21 @@ class AuthProvider extends ChangeNotifier {
       final GoogleSignInAccount? googleUser = await _googleSignIn.signIn();
       if (googleUser == null) return; // The user canceled the sign-in
 
-      final GoogleSignInAuthentication googleAuth = await googleUser.authentication;
+      final GoogleSignInAuthentication googleAuth =
+          await googleUser.authentication;
+
       final AuthCredential credential = GoogleAuthProvider.credential(
         accessToken: googleAuth.accessToken,
         idToken: googleAuth.idToken,
       );
 
       final userCredential = await _auth.signInWithCredential(credential);
+
       if (userCredential.user != null) {
-        final userDoc = FirebaseFirestore.instance.collection('users').doc(userCredential.user!.uid);
+        final userDoc = FirebaseFirestore.instance
+            .collection('users')
+            .doc(userCredential.user!.uid);
+
         final docSnapshot = await userDoc.get();
         if (!docSnapshot.exists) {
           await userDoc.set({'points': 0}, SetOptions(merge: true));
@@ -90,15 +110,20 @@ class AuthProvider extends ChangeNotifier {
         await _fetchUserPoints(); // Fetch points after successful Google login
       }
     } catch (e) {
-      print(e);
-      // Handle error
+      debugPrint('Google sign-in error: $e');
     }
   }
 
   Future<void> addPoints(int amount) async {
     if (_user == null) return;
+
     _userPoints += amount;
-    await FirebaseFirestore.instance.collection('users').doc(_user!.uid).update({'points': _userPoints});
+
+    await FirebaseFirestore.instance
+        .collection('users')
+        .doc(_user!.uid)
+        .update({'points': _userPoints});
+
     notifyListeners();
   }
 

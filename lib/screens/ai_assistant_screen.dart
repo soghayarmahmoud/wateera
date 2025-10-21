@@ -35,7 +35,7 @@ class _AiAssistantScreenState extends State<AiAssistantScreen> {
   void _sendMessage() {
     final text = _messageController.text.trim();
     if (text.isEmpty) return;
-    Provider.of<AiAssistantProvider>(context, listen: false).sendMessage(context, text);
+    Provider.of<AiAssistantProvider>(context, listen: false).sendMessage(text);
     _messageController.clear();
   }
 

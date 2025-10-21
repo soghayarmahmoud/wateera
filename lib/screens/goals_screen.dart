@@ -115,31 +115,33 @@ class GoalsScreen extends StatelessWidget {
                       },
                       child: Text('${selectedDate.toLocal()}'.split(' ')[0]),
                     ),
-                  ),
+              ])
                 ],
-              ),
-            ],
+              );
+            }),
+          
+
+          
+        
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Cancel'),
           ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(context),
-              child: const Text('Cancel'),
-            ),
-            TextButton(
-              onPressed: () {
-                if (titleController.text.isNotEmpty) {
-                  Provider.of<GoalProvider>(context, listen: false).addGoal(
-                    titleController.text,
-                    selectedDate,
-                  );
-                  Navigator.pop(context);
-                }
-              },
-              child: const Text('Add'),
-            ),
-          ],
-        );
-      },
-    );
+          TextButton(
+            onPressed: () {
+              if (titleController.text.isNotEmpty) {
+                Provider.of<GoalProvider>(context, listen: false).addGoal(
+                  titleController.text,
+                  selectedDate,
+                );
+                Navigator.pop(context);
+              }
+            },
+            child: const Text('Add'),
+          ),
+        ],
+      );
+    });
   }
 }
