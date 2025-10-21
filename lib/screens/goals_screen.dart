@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:wateera/providers/goal_provider.dart';
-import 'package:wateera/models/goal_model.dart';
 
 class GoalsScreen extends StatelessWidget {
   const GoalsScreen({super.key});

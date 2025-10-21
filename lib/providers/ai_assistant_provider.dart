@@ -5,7 +5,6 @@ import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:http/http.dart' as http;
 import 'package:provider/provider.dart';
 import 'package:wateera/models/ai_message_model.dart';
-import 'package:wateera/models/goal_model.dart';
 import 'package:wateera/models/note_model.dart';
 import 'package:wateera/models/task_model.dart';
 import 'package:wateera/providers/goal_provider.dart';

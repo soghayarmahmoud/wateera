@@ -1,4 +1,3 @@
-
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:google_sign_in/google_sign_in.dart';
@@ -16,6 +15,30 @@ class AuthProvider extends ChangeNotifier {
       _user = user;
       notifyListeners();
     });
+  }
+
+  Future<String?> signUpWithEmailAndPassword(String email, String password) async {
+    try {
+      await _auth.createUserWithEmailAndPassword(
+        email: email,
+        password: password,
+      );
+      return null; // Success
+    } on FirebaseAuthException catch (e) {
+      return e.message; // Return error message
+    }
+  }
+
+  Future<String?> signInWithEmailAndPassword(String email, String password) async {
+    try {
+      await _auth.signInWithEmailAndPassword(
+        email: email,
+        password: password,
+      );
+      return null; // Success
+    } on FirebaseAuthException catch (e) {
+      return e.message; // Return error message
+    }
   }
 
   Future<void> signInWithGoogle() async {

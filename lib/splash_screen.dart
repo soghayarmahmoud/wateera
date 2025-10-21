@@ -1,8 +1,6 @@
-
 import 'dart:async';
 import 'package:flutter/material.dart';
-import 'package:wateera/screens/auth_wrapper.dart';
-import 'package:wateera/theme/app_theme.dart';
+import 'package:wateera/screens/main_screen.dart';
 
 class AnimatedSplashScreen extends StatefulWidget {
   const AnimatedSplashScreen({super.key});
@@ -63,7 +61,7 @@ class _AnimatedSplashScreenState extends State<AnimatedSplashScreen>
 
     Timer(const Duration(milliseconds: 4200), () {
       Navigator.of(context).pushReplacement(
-        MaterialPageRoute(builder: (context) => const AuthWrapper()),
+        MaterialPageRoute(builder: (context) => const MainScreen()),
       );
     });
   }

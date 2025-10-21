@@ -1,11 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
 import 'package:wateera/components/custom_nav_bar.dart';
 import 'package:wateera/components/wateera_app_bar.dart';
 import 'package:wateera/screens/ai_assistant_screen.dart';
 import 'package:wateera/screens/all_in_one_screen.dart';
 import 'package:wateera/screens/pomodoro_screen.dart';
-import '../providers/theme_provider.dart';
 
 import 'calendar_screen.dart';
 import 'settings_screen.dart';

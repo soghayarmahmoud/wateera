@@ -8,7 +8,6 @@ import 'package:wateera/models/task_model.dart';
 import 'package:wateera/providers/goal_provider.dart';
 import 'package:wateera/providers/note_provider.dart';
 import 'package:wateera/providers/task_provider.dart';
-import 'day_screen.dart';
 
 class CalendarScreen extends StatefulWidget {
   const CalendarScreen({super.key});

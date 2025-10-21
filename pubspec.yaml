@@ -24,7 +24,7 @@ dependencies:
   provider: ^6.0.5
   record: ^6.1.2
   shared_preferences: ^2.2.2
-  speech_to_text: ^6.6.0
+  speech_to_text: ^7.3.0
   table_calendar: ^3.0.9
   timezone: ^0.9.3
   uuid: ^4.2.1

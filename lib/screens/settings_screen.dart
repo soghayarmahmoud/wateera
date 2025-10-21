@@ -1,4 +1,3 @@
-
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:wateera/components/wateera_app_bar.dart';
@@ -21,51 +20,80 @@ class SettingsScreen extends StatelessWidget {
               builder: (context, authProvider, child) {
                 final user = authProvider.user;
                 if (user != null) {
-                  return Column(
-                    children: [
-                      Row(
+                  return Card(
+                    elevation: 4,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(15),
+                    ),
+                    child: Padding(
+                      padding: const EdgeInsets.all(16.0),
+                      child: Column(
                         children: [
-                          CircleAvatar(
-                            radius: 40,
-                            backgroundImage: user.photoURL != null
-                                ? NetworkImage(user.photoURL!)
-                                : null,
-                            child: user.photoURL == null
-                                ? const Icon(Icons.person, size: 40)
-                                : null,
-                          ),
-                          const SizedBox(width: 16),
-                          Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
+                          Row(
                             children: [
-                              Text(
-                                user.displayName ?? 'No Name',
-                                style: const TextStyle(
-                                  fontSize: 20,
-                                  fontWeight: FontWeight.bold,
-                                ),
+                              CircleAvatar(
+                                radius: 40,
+                                backgroundImage: user.photoURL != null
+                                    ? NetworkImage(user.photoURL!)
+                                    : null,
+                                child: user.photoURL == null
+                                    ? const Icon(Icons.person, size: 40)
+                                    : null,
                               ),
-                              const SizedBox(height: 4),
-                              Text(user.email ?? 'No Email'),
+                              const SizedBox(width: 16),
+                              Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    user.displayName ?? 'No Name',
+                                    style: const TextStyle(
+                                      fontSize: 20,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                  const SizedBox(height: 4),
+                                  Text(user.email ?? 'No Email'),
+                                ],
+                              ),
                             ],
+                          ),
+                          const SizedBox(height: 20),
+                          ElevatedButton(
+                            onPressed: () {
+                              authProvider.signOut();
+                            },
+                            child: const Text('Logout'),
                           ),
                         ],
                       ),
-                      const SizedBox(height: 20),
-                      ElevatedButton(
-                        onPressed: () {
-                          authProvider.signOut();
-                        },
-                        child: const Text('Logout'),
-                      ),
-                    ],
+                    ),
                   );
                 } else {
-                  return ElevatedButton(
-                    onPressed: () {
-                      Navigator.push(context, MaterialPageRoute(builder: (context) => const LoginScreen()));
-                    },
-                    child: const Text('Login'),
+                  return Card(
+                    elevation: 4,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(15),
+                    ),
+                    child: Padding(
+                      padding: const EdgeInsets.all(16.0),
+                      child: Column(
+                        children: [
+                          const Text(
+                            'Login to sync your data across devices',
+                            textAlign: TextAlign.center,
+                            style: TextStyle(fontSize: 16),
+                          ),
+                          const SizedBox(height: 20),
+                          ElevatedButton.icon(
+                            onPressed: () {
+                              Navigator.push(context, MaterialPageRoute(builder: (context) => const LoginScreen()));
+                            },
+                            icon: const Icon(Icons.login), // TODO: Replace with Google icon
+                            label: const Text('Login with Google'),
+                          ),
+                        ],
+                      ),
+                    ),
                   );
                 }
               },

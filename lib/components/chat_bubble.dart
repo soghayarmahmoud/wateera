@@ -23,7 +23,7 @@ class ChatBubble extends StatelessWidget {
             decoration: BoxDecoration(
               color: isMe
                   ? Theme.of(context).primaryColor
-                  : Theme.of(context).colorScheme.surfaceVariant,
+                  : Theme.of(context).colorScheme.surfaceContainerHighest,
               borderRadius: BorderRadius.circular(10),
             ),
             child: Column(
