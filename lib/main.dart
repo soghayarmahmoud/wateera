@@ -1,6 +1,8 @@
+import 'package:android_intent_plus/android_intent.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:permission_handler/permission_handler.dart';
 import 'package:provider/provider.dart';
 import 'package:wateera/providers/ai_assistant_provider.dart';
 import 'package:wateera/providers/auth_provider.dart';
@@ -20,6 +22,7 @@ void main() async {
   await dotenv.load(fileName: ".env");
   tz.initializeTimeZones();
   await NotificationService().init();
+  await _requestExactAlarmPermission();
 
   runApp(const WateeraApp());
 }
@@ -35,16 +38,34 @@ class WateeraApp extends StatelessWidget {
         ChangeNotifierProvider(create: (_) => AiAssistantProvider()),
         ChangeNotifierProvider(create: (_) => AuthProvider()),
         ChangeNotifierProxyProvider<AuthProvider, TaskProvider>(
-          create: (context) => TaskProvider(Provider.of<AuthProvider>(context, listen: false)),
-          update: (context, auth, previous) => TaskProvider(auth),
+          create: (context) => TaskProvider(
+            Provider.of<AuthProvider>(context, listen: false),
+            [],
+          ),
+          update: (context, auth, previous) {
+            previous!.updateAuthProvider(auth);
+            return previous;
+          },
         ),
         ChangeNotifierProxyProvider<AuthProvider, NoteProvider>(
-          create: (context) => NoteProvider(Provider.of<AuthProvider>(context, listen: false)),
-          update: (context, auth, previous) => NoteProvider(auth),
+          create: (context) => NoteProvider(
+            Provider.of<AuthProvider>(context, listen: false),
+            [],
+          ),
+          update: (context, auth, previous) {
+            previous!.updateAuthProvider(auth);
+            return previous;
+          },
         ),
         ChangeNotifierProxyProvider<AuthProvider, GoalProvider>(
-          create: (context) => GoalProvider(Provider.of<AuthProvider>(context, listen: false)),
-          update: (context, auth, previous) => GoalProvider(auth),
+          create: (context) => GoalProvider(
+            Provider.of<AuthProvider>(context, listen: false),
+            [],
+          ),
+          update: (context, auth, previous) {
+            previous!.updateAuthProvider(auth);
+            return previous;
+          },
         ),
         ChangeNotifierProvider(create: (_) => PomodoroProvider()),
       ],
@@ -53,8 +74,14 @@ class WateeraApp extends StatelessWidget {
           return MaterialApp(
             title: 'Wateera',
             debugShowCheckedModeBanner: false,
-            theme: AppTheme.getTheme(Brightness.light, themeProvider.primaryColor),
-            darkTheme: AppTheme.getTheme(Brightness.dark, themeProvider.primaryColor),
+            theme: AppTheme.getTheme(
+              Brightness.light,
+              themeProvider.primaryColor,
+            ),
+            darkTheme: AppTheme.getTheme(
+              Brightness.dark,
+              themeProvider.primaryColor,
+            ),
             themeMode: themeProvider.themeMode,
             home: const AnimatedSplashScreen(),
           );
@@ -62,4 +89,27 @@ class WateeraApp extends StatelessWidget {
       ),
     );
   }
+}
+
+Future<void> _requestExactAlarmPermission() async {
+  // For Android 12 (API 31) and above, we need to request this permission
+  // For Android 14 (API 34) and above, it must be requested at runtime.
+  // This permission doesn't have a "permanently denied" state.
+  // `request()` will open the settings screen for the user.
+  if (await Permission.scheduleExactAlarm.isDenied) {
+    final status = await Permission.scheduleExactAlarm.request();
+    if (status.isDenied) {
+      // The user returned from the settings screen without granting the permission.
+      // We can open it again or show a dialog explaining why it's needed.
+      // For simplicity, we'll just try to open it one more time.
+      _openExactAlarmSettings();
+    }
+  }
+}
+
+void _openExactAlarmSettings() {
+  const intent = AndroidIntent(
+    action: 'android.settings.REQUEST_SCHEDULE_EXACT_ALARM',
+  );
+  intent.launch();
 }

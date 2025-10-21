@@ -8,6 +8,7 @@ import 'package:wateera/models/task_model.dart';
 import 'package:wateera/providers/goal_provider.dart';
 import 'package:wateera/providers/note_provider.dart';
 import 'package:wateera/providers/task_provider.dart';
+import 'package:wateera/screens/day_screen.dart';
 
 class CalendarScreen extends StatefulWidget {
   const CalendarScreen({super.key});
@@ -27,11 +28,12 @@ class _CalendarScreenState extends State<CalendarScreen> {
     final noteProvider = Provider.of<NoteProvider>(context);
 
     final tasksForSelectedDay = taskProvider.getTasksForDate(_selectedDay);
-    final goalsForSelectedDay = goalProvider.goals.where((goal) => isSameDay(goal.endTime, _selectedDay)).toList();
+    final goalsForSelectedDay = goalProvider.goals
+        .where((goal) => isSameDay(goal.endTime, _selectedDay))
+        .toList();
     final notesForSelectedDay = noteProvider.getNotesForDate(_selectedDay);
 
     return Scaffold(
-      appBar: const WateeraAppBar(title: Text('Calendar')),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16),
         child: Column(
@@ -48,6 +50,13 @@ class _CalendarScreenState extends State<CalendarScreen> {
                     _selectedDay = selectedDay;
                     _focusedDay = focusedDay;
                   });
+                  // Navigate to DayScreen when a day is tapped
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => DayScreen(day: selectedDay),
+                    ),
+                  );
                 },
                 calendarStyle: CalendarStyle(
                   selectedDecoration: const BoxDecoration(
@@ -72,7 +81,9 @@ class _CalendarScreenState extends State<CalendarScreen> {
                 eventLoader: (day) {
                   return [
                     ...taskProvider.getTasksForDate(day),
-                    ...goalProvider.goals.where((goal) => isSameDay(goal.endTime, day)),
+                    ...goalProvider.goals.where(
+                      (goal) => isSameDay(goal.endTime, day),
+                    ),
                     ...noteProvider.getNotesForDate(day),
                   ];
                 },
@@ -80,40 +91,28 @@ class _CalendarScreenState extends State<CalendarScreen> {
             ),
             const SizedBox(height: 24),
             Text(
-              'Tasks for ${_selectedDay.day}/${_selectedDay.month}/${_selectedDay.year}',
+              'Summary for ${_selectedDay.day}/${_selectedDay.month}/${_selectedDay.year}',
               style: Theme.of(context).textTheme.displayMedium,
             ),
             const SizedBox(height: 16),
             if (tasksForSelectedDay.isEmpty)
-              const Center(
-                child: Text('No tasks for this day'),
-              )
+              const Center(child: Text('No tasks for this day'))
             else
-              ...tasksForSelectedDay.map((task) => _buildTaskCard(task, taskProvider)),
-            const SizedBox(height: 24),
-            Text(
-              'Goals for ${_selectedDay.day}/${_selectedDay.month}/${_selectedDay.year}',
-              style: Theme.of(context).textTheme.displayMedium,
-            ),
-            const SizedBox(height: 16),
+              ...tasksForSelectedDay.map(
+                (task) => _buildTaskCard(task, taskProvider),
+              ),
             if (goalsForSelectedDay.isEmpty)
-              const Center(
-                child: Text('No goals for this day'),
-              )
+              const Center(child: Text('No goals for this day'))
             else
-              ...goalsForSelectedDay.map((goal) => _buildGoalCard(goal, goalProvider)),
-            const SizedBox(height: 24),
-            Text(
-              'Notes for ${_selectedDay.day}/${_selectedDay.month}/${_selectedDay.year}',
-              style: Theme.of(context).textTheme.displayMedium,
-            ),
-            const SizedBox(height: 16),
+              ...goalsForSelectedDay.map(
+                (goal) => _buildGoalCard(goal, goalProvider),
+              ),
             if (notesForSelectedDay.isEmpty)
-              const Center(
-                child: Text('No notes for this day'),
-              )
+              const Center(child: Text('No notes for this day'))
             else
-              ...notesForSelectedDay.map((note) => _buildNoteCard(note, noteProvider)),
+              ...notesForSelectedDay.map(
+                (note) => _buildNoteCard(note, noteProvider),
+              ),
           ],
         ),
       ),
@@ -127,9 +126,7 @@ class _CalendarScreenState extends State<CalendarScreen> {
         leading: Checkbox(
           value: task.isCompleted,
           onChanged: (_) => taskProvider.toggleTaskCompletion(task.id),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(4),
-          ),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(4)),
         ),
         title: Text(
           task.title,
@@ -154,9 +151,7 @@ class _CalendarScreenState extends State<CalendarScreen> {
         leading: Checkbox(
           value: goal.isCompleted,
           onChanged: (_) => goalProvider.toggleGoalCompletion(goal.id),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(4),
-          ),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(4)),
         ),
         title: Text(
           goal.title,

@@ -66,48 +66,55 @@ class GoalsScreen extends StatelessWidget {
     final titleController = TextEditingController();
     DateTime selectedDate = DateTime.now();
 
-    showDialog(
-      context: context,
-      builder: (context) {
-        return AlertDialog(
-          title: const Text('Add Goal'),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              TextField(
-                controller: titleController,
-                decoration: const InputDecoration(labelText: 'Goal Title'),
-              ),
-              const SizedBox(height: 16),
-              Row(
-                children: [
-                  const Text('End Time:'),
-                  const SizedBox(width: 8),
-                  TextButton(
-                    onPressed: () async {
-                      final date = await showDatePicker(
-                        context: context,
-                        initialDate: selectedDate,
-                        firstDate: DateTime.now(),
-                        lastDate: DateTime(2100),
-                      );
-                      if (date != null) {
-                        final time = await showTimePicker(
+    showDialog(context: context, builder: (context) {
+      return AlertDialog(
+        title: const Text('Add Goal'),
+        content: StatefulBuilder(
+          builder: (BuildContext context, StateSetter setState) {
+            return Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                TextField(
+                  controller: titleController,
+                  decoration: const InputDecoration(labelText: 'Goal Title'),
+                ),
+                const SizedBox(height: 16),
+                Row(
+                  children: [
+                    const Text('End Time:'),
+                    const SizedBox(width: 8),
+                    TextButton(
+                      onPressed: () async {
+                        final date = await showDatePicker(
                           context: context,
-                          initialTime: TimeOfDay.fromDateTime(selectedDate),
+                          initialDate: selectedDate,
+                          firstDate: DateTime.now(),
+                          lastDate: DateTime(2100),
                         );
-                        if (time != null) {
-                          selectedDate = DateTime(
-                            date.year,
-                            date.month,
-                            date.day,
-                            time.hour,
-                            time.minute,
+                        if (date != null) {
+                          final time = await showTimePicker(
+                            context: context,
+                            initialTime: TimeOfDay.fromDateTime(selectedDate),
                           );
+                          if (time != null) {
+                            setState(() {
+                              selectedDate = DateTime(
+                                date.year,
+                                date.month,
+                                date.day,
+                                time.hour,
+                                time.minute,
+                              );
+                            });
+                          } else {
+                            setState(() {
+                              selectedDate = date; // Update date even if time not picked
+                            });
+                          }
                         }
-                      }
-                    },
-                    child: Text('${selectedDate.toLocal()}'.split(' ')[0]),
+                      },
+                      child: Text('${selectedDate.toLocal()}'.split(' ')[0]),
+                    ),
                   ),
                 ],
               ),

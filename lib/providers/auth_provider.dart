@@ -1,6 +1,7 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:google_sign_in/google_sign_in.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 
 class AuthProvider extends ChangeNotifier {
   final FirebaseAuth _auth = FirebaseAuth.instance;
@@ -8,21 +9,47 @@ class AuthProvider extends ChangeNotifier {
 
   User? _user;
 
+  int _userPoints = 0;
+
   User? get user => _user;
+  int get userPoints => _userPoints;
 
   AuthProvider() {
     _auth.authStateChanges().listen((user) {
       _user = user;
+      if (_user != null) {
+        _fetchUserPoints();
+      } else {
+        _userPoints = 0;
+      }
       notifyListeners();
     });
   }
 
-  Future<String?> signUpWithEmailAndPassword(String email, String password) async {
+  Future<void> _fetchUserPoints() async {
+    if (_user == null) return;
+    final doc = await FirebaseFirestore.instance.collection('users').doc(_user!.uid).get();
+    if (doc.exists && doc.data()!.containsKey('points')) {
+      _userPoints = doc.data()!['points'] as int;
+    } else {
+      _userPoints = 0; // Default if no points field
+      await FirebaseFirestore.instance.collection('users').doc(_user!.uid).set({'points': 0}, SetOptions(merge: true));
+    }
+      notifyListeners();
+    });
+  }
+
+  Future<String?> signUpWithEmailAndPassword(
+      String email, String password, String firstName, String lastName) async {
     try {
-      await _auth.createUserWithEmailAndPassword(
+      final userCredential = await _auth.createUserWithEmailAndPassword(
         email: email,
         password: password,
       );
+      // Update the user's profile with their name
+      await userCredential.user?.updateDisplayName('$firstName $lastName');
+      await FirebaseFirestore.instance.collection('users').doc(userCredential.user!.uid).set({'points': 0}, SetOptions(merge: true));
+      _user = _auth.currentUser; // Refresh the user
       return null; // Success
     } on FirebaseAuthException catch (e) {
       return e.message; // Return error message
@@ -35,6 +62,7 @@ class AuthProvider extends ChangeNotifier {
         email: email,
         password: password,
       );
+      await _fetchUserPoints(); // Fetch points after successful login
       return null; // Success
     } on FirebaseAuthException catch (e) {
       return e.message; // Return error message
@@ -52,11 +80,26 @@ class AuthProvider extends ChangeNotifier {
         idToken: googleAuth.idToken,
       );
 
-      await _auth.signInWithCredential(credential);
+      final userCredential = await _auth.signInWithCredential(credential);
+      if (userCredential.user != null) {
+        final userDoc = FirebaseFirestore.instance.collection('users').doc(userCredential.user!.uid);
+        final docSnapshot = await userDoc.get();
+        if (!docSnapshot.exists) {
+          await userDoc.set({'points': 0}, SetOptions(merge: true));
+        }
+        await _fetchUserPoints(); // Fetch points after successful Google login
+      }
     } catch (e) {
       print(e);
       // Handle error
     }
+  }
+
+  Future<void> addPoints(int amount) async {
+    if (_user == null) return;
+    _userPoints += amount;
+    await FirebaseFirestore.instance.collection('users').doc(_user!.uid).update({'points': _userPoints});
+    notifyListeners();
   }
 
   Future<void> signOut() async {

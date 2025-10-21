@@ -1,9 +1,10 @@
-
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:wateera/providers/auth_provider.dart';
 import 'package:wateera/services/notification_service.dart';
 import '../models/task_model.dart';
+
+const int TASK_BONUS_POINTS = 10; // Define bonus points for adding a task
 
 class TaskProvider extends ChangeNotifier {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
@@ -14,9 +15,20 @@ class TaskProvider extends ChangeNotifier {
 
   List<Task> get tasks => _tasks;
 
-  TaskProvider(AuthProvider authProvider) {
+  TaskProvider(AuthProvider authProvider, [List<Task>? initialTasks]) {
     _authProvider = authProvider;
+    _tasks = initialTasks ?? [];
     _fetchTasks();
+  }
+
+  void updateAuthProvider(AuthProvider authProvider) {
+    _authProvider = authProvider;
+    if (_authProvider.user != null) {
+      _fetchTasks();
+    } else {
+      _tasks = [];
+    }
+    notifyListeners();
   }
 
   CollectionReference get _tasksCollection => _firestore
@@ -45,6 +57,11 @@ class TaskProvider extends ChangeNotifier {
   Future<void> addTask(Task task) async {
     if (_authProvider.user == null) return;
     await _tasksCollection.doc(task.id).set(task.toJson());
+    await _notificationService.showNotification(
+      'New Task Added',
+      'You have a new task: ${task.title}',
+    );
+    await _authProvider.addPoints(TASK_BONUS_POINTS); // Add bonus points
   }
 
   Future<void> updateTask(Task updatedTask) async {
@@ -61,7 +78,9 @@ class TaskProvider extends ChangeNotifier {
     if (_authProvider.user == null) return;
     final task = _tasks.firstWhere((task) => task.id == taskId);
     task.isCompleted = !task.isCompleted;
-    await _tasksCollection.doc(taskId).update({'isCompleted': task.isCompleted});
+    await _tasksCollection.doc(taskId).update({
+      'isCompleted': task.isCompleted,
+    });
   }
 
   int get completedTasksCount {
@@ -75,10 +94,18 @@ class TaskProvider extends ChangeNotifier {
         final timeParts = task.startTime.split(':');
         final hour = int.parse(timeParts[0]);
         final minute = int.parse(timeParts[1]);
-        final taskDateTime = DateTime(task.date.year, task.date.month, task.date.day, hour, minute);
+        final taskDateTime = DateTime(
+          task.date.year,
+          task.date.month,
+          task.date.day,
+          hour,
+          minute,
+        );
 
         if (taskDateTime.isAfter(now)) {
-          final reminderTime = taskDateTime.subtract(const Duration(minutes: 15));
+          final reminderTime = taskDateTime.subtract(
+            const Duration(minutes: 15),
+          );
           if (reminderTime.isAfter(now)) {
             _notificationService.scheduleNotification(
               task.id.hashCode,

@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:provider/provider.dart';
 import 'package:wateera/models/task_model.dart';
 import 'package:wateera/components/wateera_app_bar.dart';
+import 'package:wateera/providers/task_provider.dart';
 import 'dart:math';
 
-import 'goals_screen.dart';
+import 'goals_screen.dart'; // Assuming you have these screens
 import 'notes_screen.dart';
 import 'pomodoro_screen.dart';
 import 'tasks_screen.dart';
@@ -19,12 +21,13 @@ class DayScreen extends StatefulWidget {
 }
 
 class _DayScreenState extends State<DayScreen> {
-  List<Task> tasks = [];
-
   @override
   Widget build(BuildContext context) {
+    // Get tasks from the provider for the selected day
+    final taskProvider = Provider.of<TaskProvider>(context);
+    final tasks = taskProvider.getTasksForDate(widget.day);
+
     return Scaffold(
-      appBar: const WateeraAppBar(title: Text('Day View')),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16.0),
         child: Column(
@@ -36,7 +39,10 @@ class _DayScreenState extends State<DayScreen> {
               color: Colors.blue,
               icon: Icons.note,
               onTap: () {
-                Navigator.push(context, MaterialPageRoute(builder: (context) => const NotesScreen()));
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => const NotesScreen()),
+                );
               },
             ),
             const SizedBox(height: 16),
@@ -46,7 +52,10 @@ class _DayScreenState extends State<DayScreen> {
               color: Colors.green,
               icon: Icons.check_circle_outline,
               onTap: () {
-                Navigator.push(context, MaterialPageRoute(builder: (context) => const TasksScreen()));
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => const TasksScreen()),
+                );
               },
             ),
             const SizedBox(height: 16),
@@ -56,7 +65,12 @@ class _DayScreenState extends State<DayScreen> {
               color: Colors.orange,
               icon: Icons.timer,
               onTap: () {
-                Navigator.push(context, MaterialPageRoute(builder: (context) => const PomodoroScreen()));
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => const PomodoroScreen(),
+                  ),
+                );
               },
             ),
             const SizedBox(height: 16),
@@ -66,7 +80,10 @@ class _DayScreenState extends State<DayScreen> {
               color: Colors.purple,
               icon: Icons.flag,
               onTap: () {
-                Navigator.push(context, MaterialPageRoute(builder: (context) => const GoalsScreen()));
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => const GoalsScreen()),
+                );
               },
             ),
             const SizedBox(height: 32),
@@ -75,55 +92,80 @@ class _DayScreenState extends State<DayScreen> {
               style: Theme.of(context).textTheme.headlineSmall,
             ),
             const SizedBox(height: 16),
-            SizedBox(
+            Container( // Changed SizedBox to Container for better flexibility
               height: 24 * 60.0, // 24 hours * 60 minutes
               child: ListView.builder(
                 itemCount: 24,
                 itemBuilder: (context, index) {
                   final hour = index;
-                  final tasksForHour = tasks.where((task) {
-                    final startParts = task.startTime.split(':');
-                    final startTime = DateTime(widget.day.year, widget.day.month, widget.day.day, int.parse(startParts[0]), int.parse(startParts[1]));
-                    final endParts = task.endTime.split(':');
-                    final endTime = DateTime(widget.day.year, widget.day.month, widget.day.day, int.parse(endParts[0]), int.parse(endParts[1]));
-                    return hour >= startTime.hour && hour < endTime.hour;
-                  }).toList();
-
                   return Container(
                     height: 60,
                     decoration: BoxDecoration(
-                      border: Border(bottom: BorderSide(color: Colors.grey.shade300)),
+                      border: Border(
+                        bottom: BorderSide(color: Colors.grey.shade300),
+                      ),
                     ),
                     child: Row(
                       children: [
                         Container(
                           width: 60,
                           alignment: Alignment.center,
-                          child: Text(DateFormat.j().format(DateTime(2023, 1, 1, hour))),
+                          child: Text(
+                            DateFormat.j().format(DateTime(2023, 1, 1, hour)),
+                          ),
                         ),
-                        Expanded(
+                        Expanded( // This Expanded is fine
                           child: Stack(
-                            children: tasks.map((task) {
-                              final startParts = task.startTime.split(':');
-                              final startTime = DateTime(widget.day.year, widget.day.month, widget.day.day, int.parse(startParts[0]), int.parse(startParts[1]));
-                              final endParts = task.endTime.split(':');
-                              final endTime = DateTime(widget.day.year, widget.day.month, widget.day.day, int.parse(endParts[0]), int.parse(endParts[1]));
-                              if (startTime.hour <= hour && endTime.hour >= hour) {
-                                final top = (startTime.minute).toDouble();
-                                final height = (endTime.difference(startTime).inMinutes).toDouble();
-                                return Positioned(
-                                  top: top,
-                                  left: 0,
-                                  right: 0,
-                                  height: height,
-                                  child: Container(
-                                    decoration: BoxDecoration(
-                                      color: Color(task.color).withOpacity(0.7),
-                                      borderRadius: BorderRadius.circular(4),
-                                    ),
-                                    child: Padding(
-                                      padding: const EdgeInsets.all(4.0),
-                                      child: Text(task.title, style: const TextStyle(color: Colors.white, fontSize: 12)),
+                            children: tasks
+                                .where((task) {
+                                  final startParts = task.startTime.split(':');
+                                  final startTime = DateTime(
+                                    widget.day.year, widget.day.month, widget.day.day, int.parse(startParts[0]), int.parse(startParts[1]),);
+                                  final endParts = task.endTime.split(':');
+                                  final endTime = DateTime(
+                                    widget.day.year, widget.day.month, widget.day.day, int.parse(endParts[0]), int.parse(endParts[1]),);
+
+                                  final hourStart = DateTime(
+                                    widget.day.year, widget.day.month, widget.day.day, hour,);
+                                  final hourEnd = hourStart.add(const Duration(hours: 1));
+
+                                  return startTime.isBefore(hourEnd) && endTime.isAfter(hourStart);
+                                })
+                                .map((task) {
+                                  final startParts = task.startTime.split(':');
+                                  final startTime = DateTime(
+                                    widget.day.year, widget.day.month, widget.day.day, int.parse(startParts[0]), int.parse(startParts[1]),);
+                                  final endParts = task.endTime.split(':');
+                                  final endTime = DateTime(
+                                    widget.day.year, widget.day.month, widget.day.day, int.parse(endParts[0]), int.parse(endParts[1]),);
+
+                                  final hourStart = DateTime(widget.day.year, widget.day.month, widget.day.day, hour,);
+                                  final hourEnd = hourStart.add(const Duration(hours: 1));
+
+                                  final top = startTime.isBefore(hourStart) ? 0.0 : startTime.minute.toDouble();
+                                  final endMinute = endTime.isAfter(hourEnd) ? 60.0 : endTime.minute.toDouble();
+                                  final height = endMinute - top;
+
+                                  return Positioned(
+                                    top: top,
+                                    left: 0,
+                                    right: 0,
+                                    height: max(0, height),
+                                    child: Container(
+                                      decoration: BoxDecoration(
+                                        color: Color(task.color).withOpacity(0.7),
+                                        borderRadius: BorderRadius.circular(4),
+                                      ),
+                                      child: Padding(
+                                        padding: const EdgeInsets.all(4.0),
+                                        child: Text(
+                                          task.title,
+                                          style: const TextStyle(
+                                            color: Colors.white,
+                                            fontSize: 12,
+                                          ),
+                                        ),
+                                      ),
                                     ),
                                   ),
                                 );
@@ -142,13 +184,19 @@ class _DayScreenState extends State<DayScreen> {
         ),
       ),
       floatingActionButton: FloatingActionButton(
-        onPressed: () => _showAddTaskDialog(),
+        onPressed: () => _showAddTaskDialog(context),
         child: const Icon(Icons.add),
       ),
     );
   }
 
-  Widget _buildMenuButton(BuildContext context, {required String title, required Color color, required IconData icon, required VoidCallback onTap}) {
+  Widget _buildMenuButton(
+    BuildContext context, {
+    required String title,
+    required Color color,
+    required IconData icon,
+    required VoidCallback onTap,
+  }) {
     return GestureDetector(
       onTap: onTap,
       child: Container(
@@ -176,7 +224,7 @@ class _DayScreenState extends State<DayScreen> {
     );
   }
 
-  void _showAddTaskDialog() {
+  void _showAddTaskDialog(BuildContext context) {
     showDialog(
       context: context,
       builder: (context) {
@@ -201,21 +249,29 @@ class _DayScreenState extends State<DayScreen> {
                       Expanded(
                         child: InkWell(
                           onTap: () async {
-                            final time = await showTimePicker(context: context, initialTime: TimeOfDay.now());
+                            final time = await showTimePicker(
+                              context: context,
+                              initialTime: TimeOfDay.now(),
+                            );
                             if (time != null) {
                               setState(() {
                                 startTime = time;
                               });
                             }
                           },
-                          child: Text(startTime?.format(context) ?? 'Start Time'),
+                          child: Text(
+                            startTime?.format(context) ?? 'Start Time',
+                          ),
                         ),
                       ),
                       const SizedBox(width: 16),
                       Expanded(
                         child: InkWell(
                           onTap: () async {
-                            final time = await showTimePicker(context: context, initialTime: TimeOfDay.now());
+                            final time = await showTimePicker(
+                              context: context,
+                              initialTime: TimeOfDay.now(),
+                            );
                             if (time != null) {
                               setState(() {
                                 endTime = time;
@@ -232,21 +288,29 @@ class _DayScreenState extends State<DayScreen> {
             },
           ),
           actions: [
-            TextButton(onPressed: () => Navigator.pop(context), child: const Text('Cancel')),
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: const Text('Cancel'),
+            ),
             TextButton(
               onPressed: () {
-                if (titleController.text.isNotEmpty && startTime != null && endTime != null) {
+                if (titleController.text.isNotEmpty &&
+                    startTime != null &&
+                    endTime != null) {
                   final newTask = Task(
                     id: DateTime.now().toString(),
                     title: titleController.text,
                     startTime: '${startTime!.hour}:${startTime!.minute}',
                     endTime: '${endTime!.hour}:${endTime!.minute}',
                     date: widget.day,
-                    color: Colors.primaries[Random().nextInt(Colors.primaries.length)].value,
+                    color: Colors
+                        .primaries[Random().nextInt(Colors.primaries.length)]
+                        .value,
                   );
-                  setState(() {
-                    tasks.add(newTask);
-                  });
+                  Provider.of<TaskProvider>(
+                    context,
+                    listen: false,
+                  ).addTask(newTask);
                   Navigator.pop(context);
                 }
               },

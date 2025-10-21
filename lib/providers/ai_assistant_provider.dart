@@ -38,29 +38,39 @@ class AiAssistantProvider extends ChangeNotifier {
       }
 
       final response = await http.post(
-        Uri.parse('https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent?key=$apiKey'),
+        Uri.parse(
+          'https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-latest:generateContent?key=$apiKey',
+        ),
         headers: {'Content-Type': 'application/json'},
         body: jsonEncode({
           'contents': [
             {
               'parts': [
-                {'text': text}
-              ]
-            }
-          ]
+                {'text': text},
+              ],
+            },
+          ],
         }),
       );
 
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
         if (data['candidates'] != null && data['candidates'].isNotEmpty) {
-          final generatedText = data['candidates'][0]['content']['parts'][0]['text'];
+          final generatedText =
+              data['candidates'][0]['content']['parts'][0]['text'];
           _messages.add(AiMessage(text: generatedText, isMe: false));
         } else {
-          _messages.add(AiMessage(text: 'Error: No response from AI', isMe: false));
+          _messages.add(
+            AiMessage(text: 'Error: No response from AI', isMe: false),
+          );
         }
       } else {
-        _messages.add(AiMessage(text: 'Error: ${response.reasonPhrase}\n${response.body}', isMe: false));
+        _messages.add(
+          AiMessage(
+            text: 'Error: ${response.reasonPhrase}\n${response.body}',
+            isMe: false,
+          ),
+        );
       }
     } catch (e) {
       _messages.add(AiMessage(text: 'Error: $e', isMe: false));
@@ -87,11 +97,19 @@ class AiAssistantProvider extends ChangeNotifier {
             endTime: endTime,
           );
           Provider.of<TaskProvider>(context, listen: false).addTask(task);
-          _messages.add(AiMessage(text: 'Task "$title" added successfully.', isMe: false));
+          _messages.add(
+            AiMessage(text: 'Task "$title" added successfully.', isMe: false),
+          );
           notifyListeners();
           return true;
         } else {
-          _messages.add(AiMessage(text: 'Invalid format. Use: add task: <title>, <YYYY-MM-DD>, <HH:MM>, <HH:MM>', isMe: false));
+          _messages.add(
+            AiMessage(
+              text:
+                  'Invalid format. Use: add task: <title>, <YYYY-MM-DD>, <HH:MM>, <HH:MM>',
+              isMe: false,
+            ),
+          );
           notifyListeners();
           return true;
         }
@@ -103,7 +121,10 @@ class AiAssistantProvider extends ChangeNotifier {
     } else if (text.startsWith('add note:')) {
       try {
         final content = text.substring('add note:'.length).trim();
-        final title = content.substring(0, content.length > 20 ? 20 : content.length);
+        final title = content.substring(
+          0,
+          content.length > 20 ? 20 : content.length,
+        );
         final note = Note(
           id: _uuid.v4(),
           title: title,
@@ -125,12 +146,22 @@ class AiAssistantProvider extends ChangeNotifier {
         if (parts.length == 2) {
           final title = parts[0].trim();
           final endTime = DateTime.parse(parts[1].trim());
-          Provider.of<GoalProvider>(context, listen: false).addGoal(title, endTime);
-          _messages.add(AiMessage(text: 'Goal "$title" added successfully.', isMe: false));
+          Provider.of<GoalProvider>(
+            context,
+            listen: false,
+          ).addGoal(title, endTime);
+          _messages.add(
+            AiMessage(text: 'Goal "$title" added successfully.', isMe: false),
+          );
           notifyListeners();
           return true;
         } else {
-          _messages.add(AiMessage(text: 'Invalid format. Use: add goal: <title>, <YYYY-MM-DD>', isMe: false));
+          _messages.add(
+            AiMessage(
+              text: 'Invalid format. Use: add goal: <title>, <YYYY-MM-DD>',
+              isMe: false,
+            ),
+          );
           notifyListeners();
           return true;
         }
