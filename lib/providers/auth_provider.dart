@@ -62,7 +62,6 @@ class AuthProvider extends ChangeNotifier {
           .doc(userCredential.user!.uid)
           .set({'points': 0}, SetOptions(merge: true));
 
-      _user = _auth.currentUser; // Refresh the user
       return null; // Success
     } on FirebaseAuthException catch (e) {
       return e.message; // Return error message
@@ -76,7 +75,6 @@ class AuthProvider extends ChangeNotifier {
         email: email,
         password: password,
       );
-      await _fetchUserPoints(); // Fetch points after successful login
       return null; // Success
     } on FirebaseAuthException catch (e) {
       return e.message; // Return error message
@@ -107,10 +105,14 @@ class AuthProvider extends ChangeNotifier {
         if (!docSnapshot.exists) {
           await userDoc.set({'points': 0}, SetOptions(merge: true));
         }
-        await _fetchUserPoints(); // Fetch points after successful Google login
+        // No need to call _fetchUserPoints() here, the authStateChanges listener will handle it.
       }
-    } catch (e) {
+    } on FirebaseAuthException catch (e) {
       debugPrint('Google sign-in error: $e');
+      rethrow; // Rethrow to allow the UI to handle the error
+    } catch (e) {
+      debugPrint('An unexpected error occurred during Google sign-in: $e');
+      rethrow; // Rethrow to allow the UI to handle the error
     }
   }
 

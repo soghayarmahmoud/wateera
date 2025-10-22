@@ -8,16 +8,15 @@ environment:
 
 dependencies:
   android_intent_plus: ^6.0.0
-  cloud_firestore: ^4.17.2
-  firebase_auth: ^4.16.0
-  firebase_core: ^2.31.0
+  cloud_firestore: ^5.0.1
+  firebase_auth: ^5.1.0
+  firebase_core: ^3.1.0
   flutter:
     sdk: flutter
   flutter_dotenv: ^5.1.0
   flutter_local_notifications: ^17.0.0
   google_fonts: ^6.1.0
-  google_generative_ai: ^0.4.7
-  google_sign_in: ^6.2.1
+  google_sign_in: ^6.2.1 # This version is recent, but we'll keep it consistent.
   hive: ^2.2.3
   hive_flutter: ^1.1.0
   http: ^1.2.1

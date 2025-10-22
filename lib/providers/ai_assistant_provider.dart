@@ -1,3 +1,5 @@
+// ignore_for_file: unnecessary_null_comparison
+
 import 'package:flutter/material.dart';
 
 import 'package:flutter_dotenv/flutter_dotenv.dart';
@@ -60,7 +62,7 @@ class AiAssistantProvider extends ChangeNotifier {
       if (response.text != null) {
         _messages.add(AiMessage(text: response.text!, isMe: false));
       } else if (response.candidates != null &&
-          response.candidates!.isNotEmpty) {
+          response.candidates.isNotEmpty) {
         final candidate = response.candidates![0];
         if (candidate.finishReason != null) {
           _messages.add(
