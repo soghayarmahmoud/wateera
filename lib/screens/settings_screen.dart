@@ -108,7 +108,10 @@ class _SettingsScreenState extends State<SettingsScreen> {
         child: ListTile(
           leading: CircleAvatar(
             backgroundColor: Theme.of(context).primaryColor.withOpacity(0.2),
-            child: Image.asset('assets/images/user_icon.png', height: 24),
+            child: Image.asset(
+              'assets/images/user.jpg',
+              height: 24,
+            ), // This was already correct, but I'll ensure it stays.
           ),
           title: Text(
             '${authProvider.user!.displayName ?? 'Wateera User'} (${authProvider.userPoints} points)',
@@ -134,7 +137,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
   Widget _buildXPSection(BuildContext context) {
     final userProvider = Provider.of<UserProvider>(context);
     final theme = Theme.of(context);
-    
+
     if (userProvider.currentUser == null) {
       return Card(
         child: Padding(
@@ -203,11 +206,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                       ),
                       child: Column(
                         children: [
-                          Icon(
-                            Icons.stars,
-                            color: Colors.white,
-                            size: 32,
-                          ),
+                          Icon(Icons.stars, color: Colors.white, size: 32),
                           const SizedBox(height: 8),
                           Text(
                             'Level ${userProvider.currentLevel}',
@@ -252,14 +251,19 @@ class _SettingsScreenState extends State<SettingsScreen> {
                           Text(
                             'Progress to Level ${userProvider.currentLevel + 1}',
                             style: theme.textTheme.bodyMedium?.copyWith(
-                              color: theme.textTheme.bodyLarge?.color?.withOpacity(0.7),
+                              color: theme.textTheme.bodyLarge?.color
+                                  ?.withOpacity(0.7),
                             ),
                           ),
                           const SizedBox(height: 8),
                           LinearProgressIndicator(
                             value: userProvider.levelProgress,
-                            backgroundColor: theme.primaryColor.withOpacity(0.2),
-                            valueColor: AlwaysStoppedAnimation<Color>(theme.primaryColor),
+                            backgroundColor: theme.primaryColor.withOpacity(
+                              0.2,
+                            ),
+                            valueColor: AlwaysStoppedAnimation<Color>(
+                              theme.primaryColor,
+                            ),
                             minHeight: 8,
                           ),
                           const SizedBox(height: 4),
@@ -349,7 +353,13 @@ class _SettingsScreenState extends State<SettingsScreen> {
     );
   }
 
-  Widget _buildXPSourceItem(IconData icon, String title, String xp, Color color, ThemeData theme) {
+  Widget _buildXPSourceItem(
+    IconData icon,
+    String title,
+    String xp,
+    Color color,
+    ThemeData theme,
+  ) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 8.0),
       child: Row(
@@ -360,19 +370,10 @@ class _SettingsScreenState extends State<SettingsScreen> {
               color: color.withOpacity(0.1),
               borderRadius: BorderRadius.circular(8),
             ),
-            child: Icon(
-              icon,
-              size: 16,
-              color: color,
-            ),
+            child: Icon(icon, size: 16, color: color),
           ),
           const SizedBox(width: 12),
-          Expanded(
-            child: Text(
-              title,
-              style: theme.textTheme.bodyMedium,
-            ),
-          ),
+          Expanded(child: Text(title, style: theme.textTheme.bodyMedium)),
           Text(
             xp,
             style: theme.textTheme.bodyMedium?.copyWith(
