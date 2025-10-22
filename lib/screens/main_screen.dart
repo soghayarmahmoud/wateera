@@ -3,13 +3,13 @@ import 'package:provider/provider.dart';
 import 'package:table_calendar/table_calendar.dart';
 import 'package:wateera/components/custom_nav_bar.dart';
 import 'package:wateera/components/wateera_app_bar.dart';
-import 'package:wateera/models/goal_model.dart';
 import 'package:wateera/providers/goal_provider.dart';
 import 'package:wateera/providers/note_provider.dart';
 import 'package:wateera/providers/task_provider.dart';
 import 'package:wateera/screens/ai_assistant_screen.dart';
 import 'package:wateera/screens/all_in_one_screen.dart';
 import 'package:wateera/screens/pomodoro_screen.dart';
+import 'package:wateera/screens/time_blocking_screen.dart';
 import 'package:wateera/services/notification_service.dart';
 
 import 'calendar_screen.dart';
@@ -27,7 +27,7 @@ class _MainScreenState extends State<MainScreen> {
 
   final List<Widget> _screens = [
     const AiAssistantScreen(),
-    const AllInOneScreen(),
+    const TimeBlockingScreen(),
     const CalendarScreen(),
     const PomodoroScreen(),
     const SettingsScreen(),
@@ -35,7 +35,7 @@ class _MainScreenState extends State<MainScreen> {
 
   final List<String> _screenTitles = [
     'AI Assistant',
-    'All-In-One',
+    'Time Blocking',
     'Calendar',
     'Pomodoro',
     'Settings',

@@ -11,6 +11,8 @@ import 'package:wateera/providers/note_provider.dart';
 import 'package:wateera/providers/pomodoro_provider.dart';
 import 'package:wateera/providers/task_provider.dart';
 import 'package:wateera/providers/theme_provider.dart';
+import 'package:wateera/providers/time_block_provider.dart';
+import 'package:wateera/providers/user_provider.dart';
 import 'package:wateera/splash_screen.dart';
 import 'package:wateera/theme/app_theme.dart';
 import 'package:wateera/services/notification_service.dart';
@@ -37,36 +39,84 @@ class WateeraApp extends StatelessWidget {
         // 1. Providers مستقلة (لا تعتمد على غيرها)
         ChangeNotifierProvider(create: (_) => ThemeProvider()),
         ChangeNotifierProvider(create: (_) => AuthProvider()),
-        ChangeNotifierProvider(create: (_) => PomodoroProvider()),
+        ChangeNotifierProvider(create: (_) => UserProvider()),
 
         // 2. Providers تعتمد على AuthProvider
         ChangeNotifierProxyProvider<AuthProvider, TaskProvider>(
-          create: (context) => TaskProvider(
-            context.read<AuthProvider>(), // استخدم .read أفضل
-            [],
-          ),
+          create: (context) {
+            final taskProvider = TaskProvider(
+              context.read<AuthProvider>(),
+              [],
+            );
+            // Connect UserProvider
+            taskProvider.setUserProvider(context.read<UserProvider>());
+            return taskProvider;
+          },
           update: (context, auth, previous) {
             previous!.updateAuthProvider(auth);
+            previous.setUserProvider(context.read<UserProvider>());
             return previous;
           },
         ),
         ChangeNotifierProxyProvider<AuthProvider, NoteProvider>(
-          create: (context) => NoteProvider(
-            context.read<AuthProvider>(),
-            [],
-          ),
+          create: (context) {
+            final noteProvider = NoteProvider(
+              context.read<AuthProvider>(),
+              [],
+            );
+            // Connect UserProvider
+            noteProvider.setUserProvider(context.read<UserProvider>());
+            return noteProvider;
+          },
           update: (context, auth, previous) {
             previous!.updateAuthProvider(auth);
+            previous.setUserProvider(context.read<UserProvider>());
             return previous;
           },
         ),
         ChangeNotifierProxyProvider<AuthProvider, GoalProvider>(
-          create: (context) => GoalProvider(
-            context.read<AuthProvider>(),
-            [],
-          ),
+          create: (context) {
+            final goalProvider = GoalProvider(
+              context.read<AuthProvider>(),
+              [],
+            );
+            // Connect UserProvider
+            goalProvider.setUserProvider(context.read<UserProvider>());
+            return goalProvider;
+          },
           update: (context, auth, previous) {
             previous!.updateAuthProvider(auth);
+            previous.setUserProvider(context.read<UserProvider>());
+            return previous;
+          },
+        ),
+
+        // 3. TimeBlockProvider depends on AuthProvider and UserProvider
+        ChangeNotifierProxyProvider<AuthProvider, TimeBlockProvider>(
+          create: (context) {
+            final timeBlockProvider = TimeBlockProvider(
+              context.read<AuthProvider>(),
+              [],
+            );
+            timeBlockProvider.setUserProvider(context.read<UserProvider>());
+            return timeBlockProvider;
+          },
+          update: (context, auth, previous) {
+            previous!.updateAuthProvider(auth);
+            previous.setUserProvider(context.read<UserProvider>());
+            return previous;
+          },
+        ),
+
+        // 4. Connect PomodoroProvider with UserProvider
+        ChangeNotifierProxyProvider<UserProvider, PomodoroProvider>(
+          create: (context) {
+            final pomodoroProvider = PomodoroProvider();
+            pomodoroProvider.setUserProvider(context.read<UserProvider>());
+            return pomodoroProvider;
+          },
+          update: (context, userProvider, previous) {
+            previous!.setUserProvider(userProvider);
             return previous;
           },
         ),

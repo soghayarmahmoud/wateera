@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:wateera/providers/auth_provider.dart';
+import 'package:wateera/providers/user_provider.dart';
 import 'package:wateera/models/goal_model.dart';
 import 'package:wateera/services/notification_service.dart';
 import 'package:uuid/uuid.dart';
@@ -12,6 +13,7 @@ class GoalProvider extends ChangeNotifier {
   final NotificationService _notificationService = NotificationService();
   final Uuid _uuid = const Uuid();
   late AuthProvider _authProvider;
+  UserProvider? _userProvider;
 
   List<Goal> _goals = [];
 
@@ -21,6 +23,10 @@ class GoalProvider extends ChangeNotifier {
     _authProvider = authProvider;
     _goals = initialGoals ?? [];
     _fetchGoals();
+  }
+
+  void setUserProvider(UserProvider userProvider) {
+    _userProvider = userProvider;
   }
 
   void updateAuthProvider(AuthProvider authProvider) {
@@ -48,9 +54,18 @@ class GoalProvider extends ChangeNotifier {
     });
   }
 
-  Future<void> addGoal(String title, DateTime endTime) async {
+  Future<void> addGoal(String title, DateTime endTime, {String description = '', int color = 0xFF4CAF50, GoalPriority priority = GoalPriority.medium}) async {
     if (_authProvider.user == null) return;
-    final newGoal = Goal(id: _uuid.v4(), title: title, endTime: endTime);
+    final now = DateTime.now();
+    final newGoal = Goal(
+      id: _uuid.v4(), 
+      title: title, 
+      description: description,
+      createdAt: now,
+      endTime: endTime,
+      color: color,
+      priority: priority,
+    );
     await _goalsCollection.doc(newGoal.id).set(newGoal.toJson());
     await _notificationService.showNotification(
       'New Goal Added',
@@ -72,10 +87,17 @@ class GoalProvider extends ChangeNotifier {
   Future<void> toggleGoalCompletion(String goalId) async {
     if (_authProvider.user == null) return;
     final goal = _goals.firstWhere((goal) => goal.id == goalId);
+    final wasCompleted = goal.isCompleted;
     goal.isCompleted = !goal.isCompleted;
+    
     await _goalsCollection.doc(goalId).update({
       'isCompleted': goal.isCompleted,
     });
+
+    // Award XP when goal is completed (not when uncompleted)
+    if (!wasCompleted && goal.isCompleted && _userProvider != null) {
+      await _userProvider!.awardGoalCompletionXP();
+    }
   }
 
   void scheduleGoalNotifications() {

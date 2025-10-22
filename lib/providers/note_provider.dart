@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:wateera/providers/auth_provider.dart';
+import 'package:wateera/providers/user_provider.dart';
 import 'package:wateera/services/notification_service.dart';
 import '../models/note_model.dart';
 
@@ -10,6 +11,7 @@ class NoteProvider extends ChangeNotifier {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
   final NotificationService _notificationService = NotificationService();
   late AuthProvider _authProvider;
+  UserProvider? _userProvider;
 
   List<Note> _notes = [];
 
@@ -19,6 +21,10 @@ class NoteProvider extends ChangeNotifier {
     _authProvider = authProvider;
     _notes = initialNotes ?? [];
     _fetchNotes();
+  }
+
+  void setUserProvider(UserProvider userProvider) {
+    _userProvider = userProvider;
   }
 
   void updateAuthProvider(AuthProvider authProvider) {
@@ -60,7 +66,11 @@ class NoteProvider extends ChangeNotifier {
       'New Note Added',
       'You have a new note: ${note.title}',
     );
-    await _authProvider.addPoints(NOTE_BONUS_POINTS); // Add bonus points
+    
+    // Award XP for adding a note
+    if (_userProvider != null) {
+      await _userProvider!.awardNoteXP();
+    }
   }
 
   Future<void> updateNote(Note updatedNote) async {

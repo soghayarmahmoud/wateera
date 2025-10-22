@@ -4,6 +4,7 @@ import 'package:provider/provider.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:wateera/providers/auth_provider.dart';
 import 'package:wateera/providers/theme_provider.dart';
+import 'package:wateera/providers/user_provider.dart';
 import 'package:wateera/screens/login_screen.dart';
 import 'package:wateera/screens/signup_screen.dart';
 
@@ -46,6 +47,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
               padding: const EdgeInsets.all(16.0),
               children: [
                 _buildAuthSection(context),
+                const Divider(height: 32),
+                _buildXPSection(context),
                 const Divider(height: 32),
                 _buildThemeSection(context),
                 const Divider(height: 32),
@@ -126,6 +129,260 @@ class _SettingsScreenState extends State<SettingsScreen> {
         ),
       );
     }
+  }
+
+  Widget _buildXPSection(BuildContext context) {
+    final userProvider = Provider.of<UserProvider>(context);
+    final theme = Theme.of(context);
+    
+    if (userProvider.currentUser == null) {
+      return Card(
+        child: Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: Column(
+            children: [
+              Icon(
+                Icons.stars,
+                size: 48,
+                color: theme.primaryColor.withOpacity(0.6),
+              ),
+              const SizedBox(height: 12),
+              Text(
+                'Sign in to track your progress',
+                style: theme.textTheme.titleMedium?.copyWith(
+                  color: theme.textTheme.bodyLarge?.color?.withOpacity(0.7),
+                ),
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: 8),
+              Text(
+                'Earn XP by completing tasks, goals, notes, and Pomodoro sessions',
+                style: theme.textTheme.bodyMedium?.copyWith(
+                  color: theme.textTheme.bodyLarge?.color?.withOpacity(0.5),
+                ),
+                textAlign: TextAlign.center,
+              ),
+            ],
+          ),
+        ),
+      );
+    }
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text('Progress & Achievements', style: theme.textTheme.titleLarge),
+        const SizedBox(height: 8),
+        Card(
+          child: Padding(
+            padding: const EdgeInsets.all(20.0),
+            child: Column(
+              children: [
+                // Level and XP Display
+                Row(
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.all(16),
+                      decoration: BoxDecoration(
+                        gradient: LinearGradient(
+                          colors: [
+                            theme.primaryColor,
+                            theme.primaryColor.withOpacity(0.7),
+                          ],
+                          begin: Alignment.topLeft,
+                          end: Alignment.bottomRight,
+                        ),
+                        borderRadius: BorderRadius.circular(16),
+                        boxShadow: [
+                          BoxShadow(
+                            color: theme.primaryColor.withOpacity(0.3),
+                            blurRadius: 8,
+                            offset: const Offset(0, 4),
+                          ),
+                        ],
+                      ),
+                      child: Column(
+                        children: [
+                          Icon(
+                            Icons.stars,
+                            color: Colors.white,
+                            size: 32,
+                          ),
+                          const SizedBox(height: 8),
+                          Text(
+                            'Level ${userProvider.currentLevel}',
+                            style: theme.textTheme.titleLarge?.copyWith(
+                              color: Colors.white,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                          Text(
+                            userProvider.levelTitle,
+                            style: theme.textTheme.bodyMedium?.copyWith(
+                              color: Colors.white.withOpacity(0.9),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(width: 20),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Text(
+                                'Total XP',
+                                style: theme.textTheme.titleMedium?.copyWith(
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                              Text(
+                                '${userProvider.currentXP}',
+                                style: theme.textTheme.titleMedium?.copyWith(
+                                  fontWeight: FontWeight.bold,
+                                  color: theme.primaryColor,
+                                ),
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: 12),
+                          Text(
+                            'Progress to Level ${userProvider.currentLevel + 1}',
+                            style: theme.textTheme.bodyMedium?.copyWith(
+                              color: theme.textTheme.bodyLarge?.color?.withOpacity(0.7),
+                            ),
+                          ),
+                          const SizedBox(height: 8),
+                          LinearProgressIndicator(
+                            value: userProvider.levelProgress,
+                            backgroundColor: theme.primaryColor.withOpacity(0.2),
+                            valueColor: AlwaysStoppedAnimation<Color>(theme.primaryColor),
+                            minHeight: 8,
+                          ),
+                          const SizedBox(height: 4),
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Text(
+                                '${userProvider.currentUser?.xpInCurrentLevel ?? 0} XP',
+                                style: theme.textTheme.bodySmall,
+                              ),
+                              Text(
+                                '${userProvider.currentUser?.xpForNextLevel ?? 100} XP',
+                                style: theme.textTheme.bodySmall,
+                              ),
+                            ],
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 20),
+                // XP Sources
+                Container(
+                  padding: const EdgeInsets.all(16),
+                  decoration: BoxDecoration(
+                    color: theme.primaryColor.withOpacity(0.05),
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(
+                      color: theme.primaryColor.withOpacity(0.1),
+                    ),
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'How to earn XP:',
+                        style: theme.textTheme.titleSmall?.copyWith(
+                          fontWeight: FontWeight.w600,
+                          color: theme.primaryColor,
+                        ),
+                      ),
+                      const SizedBox(height: 12),
+                      _buildXPSourceItem(
+                        Icons.note_add,
+                        'Add a note',
+                        '10 XP',
+                        Colors.blue,
+                        theme,
+                      ),
+                      _buildXPSourceItem(
+                        Icons.task_alt,
+                        'Complete a task',
+                        '25 XP',
+                        Colors.green,
+                        theme,
+                      ),
+                      _buildXPSourceItem(
+                        Icons.flag,
+                        'Complete a goal',
+                        '50 XP',
+                        Colors.orange,
+                        theme,
+                      ),
+                      _buildXPSourceItem(
+                        Icons.timer,
+                        'Finish Pomodoro session',
+                        '15 XP',
+                        Colors.purple,
+                        theme,
+                      ),
+                      _buildXPSourceItem(
+                        Icons.login,
+                        'Daily login',
+                        '5 XP',
+                        Colors.teal,
+                        theme,
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildXPSourceItem(IconData icon, String title, String xp, Color color, ThemeData theme) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 8.0),
+      child: Row(
+        children: [
+          Container(
+            padding: const EdgeInsets.all(6),
+            decoration: BoxDecoration(
+              color: color.withOpacity(0.1),
+              borderRadius: BorderRadius.circular(8),
+            ),
+            child: Icon(
+              icon,
+              size: 16,
+              color: color,
+            ),
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Text(
+              title,
+              style: theme.textTheme.bodyMedium,
+            ),
+          ),
+          Text(
+            xp,
+            style: theme.textTheme.bodyMedium?.copyWith(
+              fontWeight: FontWeight.w600,
+              color: color,
+            ),
+          ),
+        ],
+      ),
+    );
   }
 
   Widget _buildThemeSection(BuildContext context) {

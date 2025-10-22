@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
+import 'package:wateera/providers/user_provider.dart';
 import 'package:wateera/services/notification_service.dart';
 
 class PomodoroProvider extends ChangeNotifier {
@@ -8,7 +9,12 @@ class PomodoroProvider extends ChangeNotifier {
   int _remainingSeconds = 25 * 60;
   bool _isRunning = false;
   Timer? _timer;
+  UserProvider? _userProvider;
   final NotificationService _notificationService = NotificationService();
+
+  void setUserProvider(UserProvider userProvider) {
+    _userProvider = userProvider;
+  }
 
   int get remainingSeconds => _remainingSeconds;
   bool get isRunning => _isRunning;
@@ -41,7 +47,7 @@ class PomodoroProvider extends ChangeNotifier {
         _remainingSeconds--;
         notifyListeners();
       } else {
-        stop();
+        _completeSession();
         _notificationService.showNotification(
             'Pomodoro Session Ended', 'Time for a break!');
       }
@@ -68,6 +74,19 @@ class PomodoroProvider extends ChangeNotifier {
   void stop() {
     _isRunning = false;
     _timer?.cancel();
+    notifyListeners();
+  }
+
+  // Complete session with XP reward
+  void _completeSession() async {
+    _isRunning = false;
+    _timer?.cancel();
+    
+    // Award XP for completing a Pomodoro session
+    if (_userProvider != null) {
+      await _userProvider!.awardPomodoroXP();
+    }
+    
     notifyListeners();
   }
 

@@ -16,6 +16,7 @@ dependencies:
   flutter_dotenv: ^5.1.0
   flutter_local_notifications: ^17.0.0
   google_fonts: ^6.1.0
+  google_generative_ai: ^0.4.3
   google_sign_in: ^6.2.1 # This version is recent, but we'll keep it consistent.
   hive: ^2.2.3
   hive_flutter: ^1.1.0

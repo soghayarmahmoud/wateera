@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:speech_to_text/speech_to_text.dart';
+import 'package:permission_handler/permission_handler.dart';
 import 'package:wateera/components/chat_bubble.dart';
 import 'package:wateera/providers/ai_assistant_provider.dart';
 
@@ -13,13 +15,51 @@ class AiAssistantScreen extends StatefulWidget {
 class _AiAssistantScreenState extends State<AiAssistantScreen> {
   final ScrollController _scrollController = ScrollController();
   final TextEditingController _messageController = TextEditingController();
+  final SpeechToText _speechToText = SpeechToText();
+  
+  bool _isListening = false;
+  bool _speechEnabled = false;
+  String _lastWords = '';
 
   @override
   void initState() {
     super.initState();
+    _initSpeech();
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _scrollToBottom();
     });
+  }
+
+  void _initSpeech() async {
+    // Request microphone permission
+    final status = await Permission.microphone.request();
+    if (status != PermissionStatus.granted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Microphone permission is required for voice input'),
+        ),
+      );
+      return;
+    }
+
+    _speechEnabled = await _speechToText.initialize(
+      onError: (val) {
+        setState(() {
+          _isListening = false;
+        });
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Speech recognition error: $val')),
+        );
+      },
+      onStatus: (val) {
+        if (val == 'done' || val == 'notListening') {
+          setState(() {
+            _isListening = false;
+          });
+        }
+      },
+    );
+    setState(() {});
   }
 
   void _scrollToBottom() {
@@ -37,6 +77,52 @@ class _AiAssistantScreenState extends State<AiAssistantScreen> {
     if (text.isEmpty) return;
     Provider.of<AiAssistantProvider>(context, listen: false).sendMessage(text);
     _messageController.clear();
+  }
+
+  void _startListening() async {
+    if (!_speechEnabled) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Speech recognition not available'),
+        ),
+      );
+      return;
+    }
+
+    await _speechToText.listen(
+      onResult: (val) {
+        setState(() {
+          _lastWords = val.recognizedWords;
+          _messageController.text = _lastWords;
+        });
+      },
+      listenFor: const Duration(seconds: 30),
+      pauseFor: const Duration(seconds: 3),
+      partialResults: true,
+      localeId: 'en_US',
+      onSoundLevelChange: (level) {},
+      cancelOnError: true,
+      listenMode: ListenMode.confirmation,
+    );
+    
+    setState(() {
+      _isListening = true;
+    });
+  }
+
+  void _stopListening() async {
+    await _speechToText.stop();
+    setState(() {
+      _isListening = false;
+    });
+  }
+
+  void _toggleListening() {
+    if (_isListening) {
+      _stopListening();
+    } else {
+      _startListening();
+    }
   }
 
   @override
@@ -84,11 +170,22 @@ class _AiAssistantScreenState extends State<AiAssistantScreen> {
                 child: Row(
                   children: [
                     // 🎙️ Record button
-                    IconButton(
-                      icon: const Icon(Icons.mic, color: Colors.blueAccent),
-                      onPressed: () {
-                        // TODO: implement voice recording
-                      },
+                    Container(
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        color: _isListening 
+                          ? Colors.red.withOpacity(0.1)
+                          : Colors.blue.withOpacity(0.1),
+                      ),
+                      child: IconButton(
+                        icon: Icon(
+                          _isListening ? Icons.mic : Icons.mic_none,
+                          color: _isListening ? Colors.red : Colors.blueAccent,
+                          size: _isListening ? 28 : 24,
+                        ),
+                        onPressed: _speechEnabled ? _toggleListening : null,
+                        tooltip: _isListening ? 'Stop recording' : 'Start voice input',
+                      ),
                     ),
                     // ✍️ TextField
                     Expanded(

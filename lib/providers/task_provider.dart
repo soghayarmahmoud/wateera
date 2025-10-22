@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:wateera/providers/auth_provider.dart';
+import 'package:wateera/providers/user_provider.dart';
+import 'package:wateera/providers/time_block_provider.dart';
 import 'package:wateera/services/notification_service.dart';
 import '../models/task_model.dart';
 
@@ -10,6 +12,8 @@ class TaskProvider extends ChangeNotifier {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
   final NotificationService _notificationService = NotificationService();
   late AuthProvider _authProvider;
+  UserProvider? _userProvider;
+  TimeBlockProvider? _timeBlockProvider;
 
   List<Task> _tasks = [];
 
@@ -19,6 +23,14 @@ class TaskProvider extends ChangeNotifier {
     _authProvider = authProvider;
     _tasks = initialTasks ?? [];
     _fetchTasks();
+  }
+
+  void setUserProvider(UserProvider userProvider) {
+    _userProvider = userProvider;
+  }
+
+  void setTimeBlockProvider(TimeBlockProvider timeBlockProvider) {
+    _timeBlockProvider = timeBlockProvider;
   }
 
   void updateAuthProvider(AuthProvider authProvider) {
@@ -77,10 +89,17 @@ class TaskProvider extends ChangeNotifier {
   Future<void> toggleTaskCompletion(String taskId) async {
     if (_authProvider.user == null) return;
     final task = _tasks.firstWhere((task) => task.id == taskId);
+    final wasCompleted = task.isCompleted;
     task.isCompleted = !task.isCompleted;
+    
     await _tasksCollection.doc(taskId).update({
       'isCompleted': task.isCompleted,
     });
+
+    // Award XP when task is completed (not when uncompleted)
+    if (!wasCompleted && task.isCompleted && _userProvider != null) {
+      await _userProvider!.awardTaskCompletionXP();
+    }
   }
 
   int get completedTasksCount {
@@ -116,6 +135,19 @@ class TaskProvider extends ChangeNotifier {
           }
         }
       }
+    }
+  }
+
+  // Create time block from task
+  Future<void> createTimeBlockFromTask(Task task) async {
+    if (_timeBlockProvider != null) {
+      await _timeBlockProvider!.createTimeBlockFromTask(
+        task.id,
+        task.title,
+        task.date,
+        task.startTime,
+        task.endTime,
+      );
     }
   }
 }
