@@ -85,6 +85,7 @@ class _MainScreenState extends State<MainScreen> {
       appBar: WateeraAppBar(title: Text(_screenTitles[_selectedIndex])),
       body: _screens[_selectedIndex],
       floatingActionButton: FloatingActionButton(
+        
         onPressed: () => _onItemTapped(2),
         backgroundColor: _selectedIndex == 2
             ? Theme.of(context).primaryColor

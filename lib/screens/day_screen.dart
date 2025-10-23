@@ -178,7 +178,7 @@
 
 //               ),
 //             ),
-          
+
 //         ),
 //       ),
 //       floatingActionButton: FloatingActionButton(
@@ -415,8 +415,9 @@ class _DayScreenState extends State<DayScreen> {
 
             // جدول الساعات
             SizedBox(
-              height: 24 * 60, // 24 ساعة × 60 دقيقة = 1440
+              height: 24 * 60.0, // 24 hours * 60 height per hour
               child: ListView.builder(
+                physics: const NeverScrollableScrollPhysics(),
                 itemCount: 24,
                 itemBuilder: (context, index) {
                   final hour = index;
@@ -434,109 +435,107 @@ class _DayScreenState extends State<DayScreen> {
                           width: 60,
                           alignment: Alignment.center,
                           child: Text(
-                            DateFormat.j()
-                                .format(DateTime(2023, 1, 1, hour)),
+                            DateFormat.j().format(DateTime(2023, 1, 1, hour)),
                           ),
                         ),
                         // عرض المهام
                         Expanded(
                           child: Stack(
-                            children: tasks.where((task) {
-                              final startParts =
-                                  task.startTime.split(':');
-                              final startTime = DateTime(
-                                widget.day.year,
-                                widget.day.month,
-                                widget.day.day,
-                                int.parse(startParts[0]),
-                                int.parse(startParts[1]),
-                              );
+                            children: tasks
+                                .where((task) {
+                                  final startParts = task.startTime.split(':');
+                                  final startTime = DateTime(
+                                    widget.day.year,
+                                    widget.day.month,
+                                    widget.day.day,
+                                    int.parse(startParts[0]),
+                                    int.parse(startParts[1]),
+                                  );
 
-                              final endParts =
-                                  task.endTime.split(':');
-                              final endTime = DateTime(
-                                widget.day.year,
-                                widget.day.month,
-                                widget.day.day,
-                                int.parse(endParts[0]),
-                                int.parse(endParts[1]),
-                              );
+                                  final endParts = task.endTime.split(':');
+                                  final endTime = DateTime(
+                                    widget.day.year,
+                                    widget.day.month,
+                                    widget.day.day,
+                                    int.parse(endParts[0]),
+                                    int.parse(endParts[1]),
+                                  );
 
-                              final hourStart = DateTime(
-                                widget.day.year,
-                                widget.day.month,
-                                widget.day.day,
-                                hour,
-                              );
-                              final hourEnd =
-                                  hourStart.add(const Duration(hours: 1));
+                                  final hourStart = DateTime(
+                                    widget.day.year,
+                                    widget.day.month,
+                                    widget.day.day,
+                                    hour,
+                                  );
+                                  final hourEnd = hourStart.add(
+                                    const Duration(hours: 1),
+                                  );
 
-                              return startTime.isBefore(hourEnd) &&
-                                  endTime.isAfter(hourStart);
-                            }).map((task) {
-                              final startParts =
-                                  task.startTime.split(':');
-                              final startTime = DateTime(
-                                widget.day.year,
-                                widget.day.month,
-                                widget.day.day,
-                                int.parse(startParts[0]),
-                                int.parse(startParts[1]),
-                              );
-                              final endParts =
-                                  task.endTime.split(':');
-                              final endTime = DateTime(
-                                widget.day.year,
-                                widget.day.month,
-                                widget.day.day,
-                                int.parse(endParts[0]),
-                                int.parse(endParts[1]),
-                              );
+                                  return startTime.isBefore(hourEnd) &&
+                                      endTime.isAfter(hourStart);
+                                })
+                                .map((task) {
+                                  final startParts = task.startTime.split(':');
+                                  final startTime = DateTime(
+                                    widget.day.year,
+                                    widget.day.month,
+                                    widget.day.day,
+                                    int.parse(startParts[0]),
+                                    int.parse(startParts[1]),
+                                  );
+                                  final endParts = task.endTime.split(':');
+                                  final endTime = DateTime(
+                                    widget.day.year,
+                                    widget.day.month,
+                                    widget.day.day,
+                                    int.parse(endParts[0]),
+                                    int.parse(endParts[1]),
+                                  );
 
-                              final hourStart = DateTime(
-                                widget.day.year,
-                                widget.day.month,
-                                widget.day.day,
-                                hour,
-                              );
-                              final hourEnd =
-                                  hourStart.add(const Duration(hours: 1));
+                                  final hourStart = DateTime(
+                                    widget.day.year,
+                                    widget.day.month,
+                                    widget.day.day,
+                                    hour,
+                                  );
+                                  final hourEnd = hourStart.add(
+                                    const Duration(hours: 1),
+                                  );
 
-                              final top = startTime.isBefore(hourStart)
-                                  ? 0.0
-                                  : startTime.minute.toDouble();
-                              final endMinute =
-                                  endTime.isAfter(hourEnd)
+                                  final top = startTime.isBefore(hourStart)
+                                      ? 0.0
+                                      : startTime.minute.toDouble();
+                                  final endMinute = endTime.isAfter(hourEnd)
                                       ? 60.0
                                       : endTime.minute.toDouble();
-                              final height = endMinute - top;
+                                  final height = endMinute - top;
 
-                              return Positioned(
-                                top: top,
-                                left: 0,
-                                right: 0,
-                                height: max(0, height),
-                                child: Container(
-                                  decoration: BoxDecoration(
-                                    color: Color(task.color)
-                                        .withValues(alpha: 0.7),
-                                    borderRadius:
-                                        BorderRadius.circular(4),
-                                  ),
-                                  child: Padding(
-                                    padding:
-                                        const EdgeInsets.all(4.0),
-                                    child: Text(
-                                      task.title,
-                                      style: const TextStyle(
-                                        color: Colors.white,
-                                        fontSize: 12,
+                                  return Positioned(
+                                    top: top,
+                                    left: 0,
+                                    right: 0,
+                                    height: max(0, height),
+                                    child: Container(
+                                      decoration: BoxDecoration(
+                                        color: Color(
+                                          task.color,
+                                        ).withValues(alpha: 0.7),
+                                        borderRadius: BorderRadius.circular(4),
+                                      ),
+                                      child: Padding(
+                                        padding: const EdgeInsets.all(4.0),
+                                        child: Text(
+                                          task.title,
+                                          style: const TextStyle(
+                                            color: Colors.white,
+                                            fontSize: 12,
+                                          ),
+                                        ),
                                       ),
                                     ),
-                                  ),
-                                ),
-                              );
-                            }).toList(),
+                                  );
+                                })
+                                .toList(),
                           ),
                         ),
                       ],
@@ -608,8 +607,7 @@ class _DayScreenState extends State<DayScreen> {
                 children: [
                   TextField(
                     controller: titleController,
-                    decoration:
-                        const InputDecoration(labelText: 'Title'),
+                    decoration: const InputDecoration(labelText: 'Title'),
                   ),
                   const SizedBox(height: 16),
                   Row(
@@ -628,8 +626,7 @@ class _DayScreenState extends State<DayScreen> {
                             }
                           },
                           child: Text(
-                            startTime?.format(context) ??
-                                'Start Time',
+                            startTime?.format(context) ?? 'Start Time',
                           ),
                         ),
                       ),
@@ -647,9 +644,7 @@ class _DayScreenState extends State<DayScreen> {
                               });
                             }
                           },
-                          child: Text(
-                            endTime?.format(context) ?? 'End Time',
-                          ),
+                          child: Text(endTime?.format(context) ?? 'End Time'),
                         ),
                       ),
                     ],
@@ -671,18 +666,17 @@ class _DayScreenState extends State<DayScreen> {
                   final newTask = Task(
                     id: DateTime.now().toString(),
                     title: titleController.text,
-                    startTime:
-                        '${startTime!.hour}:${startTime!.minute}',
-                    endTime:
-                        '${endTime!.hour}:${endTime!.minute}',
+                    startTime: '${startTime!.hour}:${startTime!.minute}',
+                    endTime: '${endTime!.hour}:${endTime!.minute}',
                     date: widget.day,
                     color: Colors
-                        .primaries[
-                            Random().nextInt(Colors.primaries.length)]
+                        .primaries[Random().nextInt(Colors.primaries.length)]
                         .toARGB32(), // بديل آمن لـ .value
                   );
-                  Provider.of<TaskProvider>(context, listen: false)
-                      .addTask(newTask);
+                  Provider.of<TaskProvider>(
+                    context,
+                    listen: false,
+                  ).addTask(newTask);
                   Navigator.pop(context);
                 }
               },

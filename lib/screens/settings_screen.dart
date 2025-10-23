@@ -409,7 +409,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
               ],
               onChanged: (mode) {
                 if (mode != null) {
-                  themeProvider.setThemeMode(mode);
+
+                  Provider.of<ThemeProvider>(context, listen: false).setThemeMode(mode);
                 }
               },
             ),
@@ -456,18 +457,18 @@ class _SettingsScreenState extends State<SettingsScreen> {
               // TODO: Add your actual URLs here
               IconButton(
                 icon: const Icon(Icons.code), // Represents GitHub
-                onPressed: () => launchUrl(Uri.parse('https://github.com')),
+                onPressed: () => launchUrl(Uri.parse('https://github.com/soghayarmahmoud')),
               ),
               IconButton(
                 // Using a generic icon for LinkedIn
                 icon: const Icon(Icons.business_center),
-                onPressed: () => launchUrl(Uri.parse('https://linkedin.com')),
+                onPressed: () => launchUrl(Uri.parse('https://www.linkedin.com/in/mahmoud-el-soghayar-1847a5234/')),
               ),
               IconButton(
                 // Using a generic icon for a portfolio or code website
                 icon: const Icon(Icons.web),
                 onPressed: () =>
-                    launchUrl(Uri.parse('https://your-website.com')),
+                    launchUrl(Uri.parse('https://m-el-soghayar.vercel.app/')),
               ),
             ],
           ),

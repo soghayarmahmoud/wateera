@@ -16,7 +16,8 @@ class CalendarScreen extends StatefulWidget {
   State<CalendarScreen> createState() => _CalendarScreenState();
 }
 
-class _CalendarScreenState extends State<CalendarScreen> with TickerProviderStateMixin {
+class _CalendarScreenState extends State<CalendarScreen>
+    with TickerProviderStateMixin {
   DateTime _selectedDay = DateTime.now();
   DateTime _focusedDay = DateTime.now();
   late TabController _tabController;
@@ -47,239 +48,248 @@ class _CalendarScreenState extends State<CalendarScreen> with TickerProviderStat
     final notesForSelectedDay = noteProvider.getNotesForDate(_selectedDay);
 
     return Scaffold(
-      body: Column(
-        children: [
-          // Calendar Section
-          Container(
-            margin: const EdgeInsets.all(16),
-            decoration: BoxDecoration(
-              color: theme.cardColor,
-              borderRadius: BorderRadius.circular(20),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black.withOpacity(0.1),
-                  blurRadius: 10,
-                  offset: const Offset(0, 4),
-                ),
-              ],
-            ),
-            child: TableCalendar<dynamic>(
-              firstDay: DateTime.utc(2020, 1, 1),
-              lastDay: DateTime.utc(2030, 12, 31),
-              focusedDay: _focusedDay,
-              selectedDayPredicate: (day) => isSameDay(_selectedDay, day),
-              onDaySelected: (selectedDay, focusedDay) {
-                setState(() {
-                  _selectedDay = selectedDay;
-                  _focusedDay = focusedDay;
-                });
-              },
-              calendarStyle: CalendarStyle(
-                outsideDaysVisible: false,
-                weekendTextStyle: TextStyle(color: theme.primaryColor),
-                holidayTextStyle: TextStyle(color: theme.primaryColor),
-                selectedDecoration: BoxDecoration(
-                  color: theme.primaryColor,
-                  shape: BoxShape.circle,
-                  boxShadow: [
-                    BoxShadow(
-                      color: theme.primaryColor.withOpacity(0.3),
-                      blurRadius: 8,
-                      offset: const Offset(0, 2),
-                    ),
-                  ],
-                ),
-                todayDecoration: BoxDecoration(
-                  color: theme.primaryColor.withOpacity(0.3),
-                  shape: BoxShape.circle,
-                ),
-                markerDecoration: BoxDecoration(
-                  color: theme.colorScheme.secondary,
-                  shape: BoxShape.circle,
-                ),
-                markersMaxCount: 3,
-                markerSize: 6,
-                cellMargin: const EdgeInsets.all(6),
-              ),
-              headerStyle: HeaderStyle(
-                formatButtonVisible: false,
-                titleCentered: true,
-                titleTextStyle: theme.textTheme.titleLarge?.copyWith(
-                  fontWeight: FontWeight.bold,
-                ) ?? const TextStyle(),
-                leftChevronIcon: Icon(
-                  Icons.chevron_left,
-                  color: theme.primaryColor,
-                ),
-                rightChevronIcon: Icon(
-                  Icons.chevron_right,
-                  color: theme.primaryColor,
-                ),
-              ),
-              eventLoader: (day) {
-                return [
-                  ...taskProvider.getTasksForDate(day),
-                  ...goalProvider.goals.where(
-                    (goal) => isSameDay(goal.endTime, day),
+      body: SingleChildScrollView(
+        child: Column(
+          children: [
+            // Calendar Section
+            Container(
+              margin: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                color: theme.cardColor,
+                borderRadius: BorderRadius.circular(20),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.1),
+                    blurRadius: 10,
+                    offset: const Offset(0, 4),
                   ),
-                  ...noteProvider.getNotesForDate(day),
-                ];
-              },
-            ),
-          ),
-          
-          // Selected Date Header
-          Container(
-            margin: const EdgeInsets.symmetric(horizontal: 16),
-            padding: const EdgeInsets.all(16),
-            decoration: BoxDecoration(
-              gradient: LinearGradient(
-                colors: [
-                  theme.primaryColor.withOpacity(0.1),
-                  theme.primaryColor.withOpacity(0.05),
                 ],
-                begin: Alignment.centerLeft,
-                end: Alignment.centerRight,
               ),
-              borderRadius: BorderRadius.circular(16),
-              border: Border.all(
-                color: theme.primaryColor.withOpacity(0.2),
-              ),
-            ),
-            child: Row(
-              children: [
-                Container(
-                  padding: const EdgeInsets.all(12),
-                  decoration: BoxDecoration(
-                    color: theme.primaryColor.withOpacity(0.1),
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  child: Icon(
-                    Icons.calendar_today,
+              child: TableCalendar<dynamic>(
+                firstDay: DateTime.utc(2020, 1, 1),
+                lastDay: DateTime.utc(2030, 12, 31),
+                focusedDay: _focusedDay,
+                selectedDayPredicate: (day) => isSameDay(_selectedDay, day),
+                onDaySelected: (selectedDay, focusedDay) {
+                  setState(() {
+                    _selectedDay = selectedDay;
+                    _focusedDay = focusedDay;
+                  });
+                },
+                calendarStyle: CalendarStyle(
+                  outsideDaysVisible: false,
+                  weekendTextStyle: TextStyle(color: theme.primaryColor),
+                  holidayTextStyle: TextStyle(color: theme.primaryColor),
+                  selectedDecoration: BoxDecoration(
                     color: theme.primaryColor,
-                    size: 24,
-                  ),
-                ),
-                const SizedBox(width: 16),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        _formatSelectedDate(_selectedDay),
-                        style: theme.textTheme.titleLarge?.copyWith(
-                          fontWeight: FontWeight.bold,
-                          color: theme.primaryColor,
-                        ),
-                      ),
-                      const SizedBox(height: 4),
-                      Text(
-                        '${tasksForSelectedDay.length} tasks • ${goalsForSelectedDay.length} goals • ${notesForSelectedDay.length} notes',
-                        style: theme.textTheme.bodyMedium?.copyWith(
-                          color: theme.textTheme.bodyLarge?.color?.withOpacity(0.7),
-                        ),
+                    shape: BoxShape.circle,
+                    boxShadow: [
+                      BoxShadow(
+                        color: theme.primaryColor.withOpacity(0.3),
+                        blurRadius: 8,
+                        offset: const Offset(0, 2),
                       ),
                     ],
                   ),
+                  todayDecoration: BoxDecoration(
+                    color: theme.primaryColor.withOpacity(0.3),
+                    shape: BoxShape.circle,
+                  ),
+                  markerDecoration: BoxDecoration(
+                    color: theme.colorScheme.secondary,
+                    shape: BoxShape.circle,
+                  ),
+                  markersMaxCount: 3,
+                  markerSize: 6,
+                  cellMargin: const EdgeInsets.all(6),
                 ),
-                ElevatedButton.icon(
-                  onPressed: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => DayScreen(day: _selectedDay),
-                      ),
-                    );
-                  },
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: theme.primaryColor,
-                    foregroundColor: Colors.white,
-                    shape: RoundedRectangleBorder(
+                headerStyle: HeaderStyle(
+                  formatButtonVisible: false,
+                  titleCentered: true,
+                  titleTextStyle:
+                      theme.textTheme.titleLarge?.copyWith(
+                        fontWeight: FontWeight.bold,
+                      ) ??
+                      const TextStyle(),
+                  leftChevronIcon: Icon(
+                    Icons.chevron_left,
+                    color: theme.primaryColor,
+                  ),
+                  rightChevronIcon: Icon(
+                    Icons.chevron_right,
+                    color: theme.primaryColor,
+                  ),
+                ),
+                eventLoader: (day) {
+                  return [
+                    ...taskProvider.getTasksForDate(day),
+                    ...goalProvider.goals.where(
+                      (goal) => isSameDay(goal.endTime, day),
+                    ),
+                    ...noteProvider.getNotesForDate(day),
+                  ];
+                },
+              ),
+            ),
+
+            // Selected Date Header
+            Container(
+              margin: const EdgeInsets.symmetric(horizontal: 16),
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  colors: [
+                    theme.primaryColor.withOpacity(0.1),
+                    theme.primaryColor.withOpacity(0.05),
+                  ],
+                  begin: Alignment.centerLeft,
+                  end: Alignment.centerRight,
+                ),
+                borderRadius: BorderRadius.circular(16),
+                border: Border.all(color: theme.primaryColor.withOpacity(0.2)),
+              ),
+              child: Row(
+                children: [
+                  Container(
+                    padding: const EdgeInsets.all(12),
+                    decoration: BoxDecoration(
+                      color: theme.primaryColor.withOpacity(0.1),
                       borderRadius: BorderRadius.circular(12),
                     ),
+                    child: Icon(
+                      Icons.calendar_today,
+                      color: theme.primaryColor,
+                      size: 24,
+                    ),
                   ),
-                  icon: const Icon(Icons.open_in_new, size: 18),
-                  label: const Text('View Day'),
-                ),
-              ],
-            ),
-          ),
-
-          // Tabs for different content types
-          Container(
-            margin: const EdgeInsets.all(16),
-            decoration: BoxDecoration(
-              color: theme.cardColor,
-              borderRadius: BorderRadius.circular(16),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black.withOpacity(0.05),
-                  blurRadius: 10,
-                  offset: const Offset(0, 2),
-                ),
-              ],
-            ),
-            child: TabBar(
-              controller: _tabController,
-              labelColor: theme.primaryColor,
-              unselectedLabelColor: theme.textTheme.bodyLarge?.color?.withOpacity(0.6),
-              indicator: BoxDecoration(
-                color: theme.primaryColor.withOpacity(0.1),
-                borderRadius: BorderRadius.circular(12),
+                  const SizedBox(width: 16),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          _formatSelectedDate(_selectedDay),
+                          style: theme.textTheme.titleLarge?.copyWith(
+                            fontWeight: FontWeight.bold,
+                            color: theme.primaryColor,
+                          ),
+                        ),
+                        const SizedBox(height: 4),
+                        Text(
+                          '${tasksForSelectedDay.length} tasks • ${goalsForSelectedDay.length} goals • ${notesForSelectedDay.length} notes',
+                          style: theme.textTheme.bodyMedium?.copyWith(
+                            color: theme.textTheme.bodyLarge?.color
+                                ?.withOpacity(0.7),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  ElevatedButton.icon(
+                    onPressed: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => DayScreen(day: _selectedDay),
+                        ),
+                      );
+                    },
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: theme.primaryColor,
+                      foregroundColor: Colors.white,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                    ),
+                    icon: const Icon(Icons.open_in_new, size: 18),
+                    label: const Text('View Day'),
+                  ),
+                ],
               ),
-              indicatorPadding: const EdgeInsets.all(4),
-              tabs: [
-                Tab(
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      const Icon(Icons.task_alt, size: 18),
-                      const SizedBox(width: 8),
-                      Text('Tasks (${tasksForSelectedDay.length})'),
-                    ],
-                  ),
-                ),
-                Tab(
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      const Icon(Icons.flag, size: 18),
-                      const SizedBox(width: 8),
-                      Text('Goals (${goalsForSelectedDay.length})'),
-                    ],
-                  ),
-                ),
-                Tab(
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      const Icon(Icons.note, size: 18),
-                      const SizedBox(width: 8),
-                      Text('Notes (${notesForSelectedDay.length})'),
-                    ],
-                  ),
-                ),
-              ],
             ),
-          ),
 
-          // Tab Content
-          Expanded(
-            child: TabBarView(
-              controller: _tabController,
-              children: [
-                _buildTasksTab(tasksForSelectedDay, taskProvider, theme),
-                _buildGoalsTab(goalsForSelectedDay, goalProvider, theme),
-                _buildNotesTab(notesForSelectedDay, noteProvider, theme),
-              ],
+            // Tabs for different content types
+            Container(
+              margin: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                color: theme.cardColor,
+                borderRadius: BorderRadius.circular(16),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.05),
+                    blurRadius: 10,
+                    offset: const Offset(0, 2),
+                  ),
+                ],
+              ),
+              child: TabBar(
+                controller: _tabController,
+                labelColor: theme.primaryColor,
+                unselectedLabelColor: theme.textTheme.bodyLarge?.color
+                    ?.withOpacity(0.6),
+                indicator: BoxDecoration(
+                  color: theme.primaryColor.withOpacity(0.1),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                indicatorPadding: const EdgeInsets.all(4),
+                tabs: [
+                  Tab(
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        const Icon(Icons.task_alt, size: 18),
+                        const SizedBox(width: 8),
+                        Text('Tasks'),
+                      ],
+                    ),
+                  ),
+                  Tab(
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        const Icon(Icons.flag, size: 18),
+                        const SizedBox(width: 8),
+                        Text('Goals'),
+                      ],
+                    ),
+                  ),
+                  Tab(
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        const Icon(Icons.note, size: 18),
+                        const SizedBox(width: 8),
+                        Text('Notes'),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
             ),
-          ),
-        ],
+
+            // Tab Content
+            SizedBox(
+              height: 300, // Adjust this height as needed for your content
+              child: TabBarView(
+                controller: _tabController,
+                children: [
+                  _buildTasksTab(tasksForSelectedDay, taskProvider, theme),
+                  _buildGoalsTab(goalsForSelectedDay, goalProvider, theme),
+                  _buildNotesTab(notesForSelectedDay, noteProvider, theme),
+                ],
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
 
-  Widget _buildTasksTab(List<Task> tasks, TaskProvider taskProvider, ThemeData theme) {
+  Widget _buildTasksTab(
+    List<Task> tasks,
+    TaskProvider taskProvider,
+    ThemeData theme,
+  ) {
     if (tasks.isEmpty) {
       return _buildEmptyState(
         'No Tasks',
@@ -299,7 +309,11 @@ class _CalendarScreenState extends State<CalendarScreen> with TickerProviderStat
     );
   }
 
-  Widget _buildGoalsTab(List<Goal> goals, GoalProvider goalProvider, ThemeData theme) {
+  Widget _buildGoalsTab(
+    List<Goal> goals,
+    GoalProvider goalProvider,
+    ThemeData theme,
+  ) {
     if (goals.isEmpty) {
       return _buildEmptyState(
         'No Goals',
@@ -319,7 +333,11 @@ class _CalendarScreenState extends State<CalendarScreen> with TickerProviderStat
     );
   }
 
-  Widget _buildNotesTab(List<Note> notes, NoteProvider noteProvider, ThemeData theme) {
+  Widget _buildNotesTab(
+    List<Note> notes,
+    NoteProvider noteProvider,
+    ThemeData theme,
+  ) {
     if (notes.isEmpty) {
       return _buildEmptyState(
         'No Notes',
@@ -339,7 +357,12 @@ class _CalendarScreenState extends State<CalendarScreen> with TickerProviderStat
     );
   }
 
-  Widget _buildEmptyState(String title, String subtitle, IconData icon, ThemeData theme) {
+  Widget _buildEmptyState(
+    String title,
+    String subtitle,
+    IconData icon,
+    ThemeData theme,
+  ) {
     return Center(
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
@@ -379,23 +402,23 @@ class _CalendarScreenState extends State<CalendarScreen> with TickerProviderStat
 
   Widget _buildTaskCard(Task task, TaskProvider taskProvider, ThemeData theme) {
     final isOverdue = task.date.isBefore(DateTime.now()) && !task.isCompleted;
-    
+
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
       child: Material(
         elevation: 2,
         borderRadius: BorderRadius.circular(16),
-        color: task.isCompleted 
-          ? theme.colorScheme.surface.withOpacity(0.7)
-          : theme.colorScheme.surface,
+        color: task.isCompleted
+            ? theme.colorScheme.surface.withOpacity(0.7)
+            : theme.colorScheme.surface,
         child: Container(
           padding: const EdgeInsets.all(16),
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(16),
             border: Border.all(
-              color: isOverdue 
-                ? Colors.red.withOpacity(0.3)
-                : theme.primaryColor.withOpacity(0.2),
+              color: isOverdue
+                  ? Colors.red.withOpacity(0.3)
+                  : theme.primaryColor.withOpacity(0.2),
             ),
           ),
           child: Row(
@@ -408,9 +431,9 @@ class _CalendarScreenState extends State<CalendarScreen> with TickerProviderStat
                   decoration: BoxDecoration(
                     shape: BoxShape.circle,
                     border: Border.all(
-                      color: task.isCompleted 
-                        ? Colors.green 
-                        : (isOverdue ? Colors.red : theme.primaryColor),
+                      color: task.isCompleted
+                          ? Colors.green
+                          : (isOverdue ? Colors.red : theme.primaryColor),
                       width: 2,
                     ),
                     color: task.isCompleted ? Colors.green : Colors.transparent,
@@ -429,12 +452,12 @@ class _CalendarScreenState extends State<CalendarScreen> with TickerProviderStat
                       task.title,
                       style: theme.textTheme.titleMedium?.copyWith(
                         fontWeight: FontWeight.w600,
-                        decoration: task.isCompleted 
-                          ? TextDecoration.lineThrough 
-                          : null,
-                        color: task.isCompleted 
-                          ? theme.textTheme.bodyLarge?.color?.withOpacity(0.6)
-                          : null,
+                        decoration: task.isCompleted
+                            ? TextDecoration.lineThrough
+                            : null,
+                        color: task.isCompleted
+                            ? theme.textTheme.bodyLarge?.color?.withOpacity(0.6)
+                            : null,
                       ),
                     ),
                     const SizedBox(height: 4),
@@ -466,7 +489,7 @@ class _CalendarScreenState extends State<CalendarScreen> with TickerProviderStat
 
   Widget _buildGoalCard(Goal goal, GoalProvider goalProvider, ThemeData theme) {
     final cardColor = Color(goal.color);
-    
+
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
       child: Material(
@@ -477,10 +500,7 @@ class _CalendarScreenState extends State<CalendarScreen> with TickerProviderStat
           padding: const EdgeInsets.all(16),
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(16),
-            border: Border.all(
-              color: cardColor.withOpacity(0.3),
-              width: 2,
-            ),
+            border: Border.all(color: cardColor.withOpacity(0.3), width: 2),
           ),
           child: Row(
             children: [
@@ -505,12 +525,12 @@ class _CalendarScreenState extends State<CalendarScreen> with TickerProviderStat
                       goal.title,
                       style: theme.textTheme.titleMedium?.copyWith(
                         fontWeight: FontWeight.w600,
-                        decoration: goal.isCompleted 
-                          ? TextDecoration.lineThrough 
-                          : null,
-                        color: goal.isCompleted 
-                          ? theme.textTheme.bodyLarge?.color?.withOpacity(0.6)
-                          : cardColor,
+                        decoration: goal.isCompleted
+                            ? TextDecoration.lineThrough
+                            : null,
+                        color: goal.isCompleted
+                            ? theme.textTheme.bodyLarge?.color?.withOpacity(0.6)
+                            : cardColor,
                       ),
                     ),
                     if (goal.description.isNotEmpty) ...[
@@ -518,7 +538,9 @@ class _CalendarScreenState extends State<CalendarScreen> with TickerProviderStat
                       Text(
                         goal.description,
                         style: theme.textTheme.bodySmall?.copyWith(
-                          color: theme.textTheme.bodyLarge?.color?.withOpacity(0.7),
+                          color: theme.textTheme.bodyLarge?.color?.withOpacity(
+                            0.7,
+                          ),
                         ),
                         maxLines: 2,
                         overflow: TextOverflow.ellipsis,
@@ -560,10 +582,12 @@ class _CalendarScreenState extends State<CalendarScreen> with TickerProviderStat
       const Color(0xFFFFF3E0), // Light orange
       const Color(0xFFE0F2F1), // Light teal
     ];
-    
-    final cardColor = Color(note.color != 0xFFFFFFFF 
-      ? note.color 
-      : cardColors[note.hashCode % cardColors.length].value);
+
+    final cardColor = Color(
+      note.color != 0xFFFFFFFF
+          ? note.color
+          : cardColors[note.hashCode % cardColors.length].value,
+    );
 
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
@@ -617,11 +641,7 @@ class _CalendarScreenState extends State<CalendarScreen> with TickerProviderStat
               const SizedBox(height: 12),
               Row(
                 children: [
-                  Icon(
-                    Icons.access_time,
-                    size: 14,
-                    color: Colors.black54,
-                  ),
+                  Icon(Icons.access_time, size: 14, color: Colors.black54),
                   const SizedBox(width: 4),
                   Text(
                     _formatTime(note.createdAt),
@@ -648,7 +668,20 @@ class _CalendarScreenState extends State<CalendarScreen> with TickerProviderStat
       return 'Yesterday';
     } else {
       final weekdays = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
-      final months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+      final months = [
+        'Jan',
+        'Feb',
+        'Mar',
+        'Apr',
+        'May',
+        'Jun',
+        'Jul',
+        'Aug',
+        'Sep',
+        'Oct',
+        'Nov',
+        'Dec',
+      ];
       return '${weekdays[date.weekday - 1]}, ${months[date.month - 1]} ${date.day}';
     }
   }
