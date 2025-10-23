@@ -5,7 +5,7 @@ import 'package:wateera/providers/user_provider.dart';
 import 'package:wateera/services/notification_service.dart';
 import '../models/note_model.dart';
 
-const int NOTE_BONUS_POINTS = 5; // Define bonus points for adding a note
+const int NOTE_BONUS_POINTS = 5; 
 
 class NoteProvider extends ChangeNotifier {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
