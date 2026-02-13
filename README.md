@@ -118,5 +118,5 @@ not just to do more, but to live better and focus smarter.
 
 <p align="center">
   <b>Wateera — Your Daily Rhythm for Productivity</b><br>
-  Built with ❤️ using Flutter & Firebase
+  Built with ❤️ using Flutter & Firebase By Mahmoud Elsoghayar 
 </p>
