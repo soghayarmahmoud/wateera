@@ -115,7 +115,9 @@ not just to do more, but to live better and focus smarter.
 <p align="center">
   <img src="w.png" alt="Wateera Logo" width="200"/>
 </p>
-
+---
+## ⭐ If you like this project, consider sponsoring me
+---
 <p align="center">
   <b>Wateera — Your Daily Rhythm for Productivity</b><br>
   Built with ❤️ using Flutter & Firebase By Mahmoud Elsoghayar 
